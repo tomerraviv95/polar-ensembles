@@ -2,18 +2,28 @@
 code_type: Polar
 code_len: 64
 info_len: 32
-clipping_val: 15
+clipping_val: 20
 iteration_num: 5
 design_SNR: 0.6
 crc: [] # [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1] #CRC-16
+systematic_encoding: False
 
 # data params
-batch_size: 10000  # number of samples per snr -> total = minibatch * #snrs
-filter_in_iterations_eval: True  # True = early termination
-val_SNR_start: 1
+val_batch_size: 20000  # number of samples per snr -> total = minibatch * #snrs
+val_SNR_start: 6
 val_SNR_end: 6
-val_num_SNR: 6
+val_num_SNR: 1
 noise_seed: 345000
 word_seed: 786000
 test_errors: 200
-test_on_zero_word: False
+
+# nn training
+lr: 0.001
+optimizer_type: 'ADAM'
+criterion_type: 'BCE'
+num_of_epochs: 100
+validation_epochs: 5
+train_minibatch_size: 1000
+train_SNR_start: 4
+train_SNR_end: 7
+train_num_SNR: 4

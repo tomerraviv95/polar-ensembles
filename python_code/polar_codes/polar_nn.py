@@ -1,13 +1,16 @@
+from globals import DEVICE
 from python_code.polar_codes.initialization import initialize_connections
 import torch
 import torch.nn as nn
 import numpy as np
+
 
 def min_sum(x, y):
     """
     The approximation used in the message passing algorithm
     """
     return torch.sign(x) * torch.sign(y) * torch.min(torch.abs(x), torch.abs(y))
+
 
 def get_masks_dicts(code_len, connections, pi=None):
     """
@@ -32,16 +35,15 @@ class IterateRightLayer(torch.nn.Module):
     """
     Right message passing layer
     """
-    def __init__(self, code_len, clipping_val, pi=None, device='cpu'):
+
+    def __init__(self, code_len, clipping_val):
         super().__init__()
         self.clipping_val = clipping_val
-        self.device = device
-
         # initialize weights
         connections = initialize_connections(code_len)
-        self.mask_dict, self.negative_mask_dict = get_masks_dicts(code_len, connections, pi)
+        self.mask_dict, self.negative_mask_dict = get_masks_dicts(code_len, connections)
         self.num_stages = int(np.log2(code_len))
-        self.right_weights = nn.Parameter(torch.ones((self.num_stages, 2), device=self.device), requires_grad=False)
+        self.right_weights = nn.Parameter(torch.ones((self.num_stages, 2), device=DEVICE))
 
     def forward(self, right, left):
         for i in range(self.num_stages):
@@ -62,16 +64,15 @@ class IterateLeftLayer(torch.nn.Module):
     """
     Left message passing layer
     """
-    def __init__(self, code_len, clipping_val, pi=None, device='cpu'):
+
+    def __init__(self, code_len, clipping_val):
         super().__init__()
         self.clipping_val = clipping_val
-        self.device = device
-
         # initialize weights
         connections = initialize_connections(code_len)
-        self.mask_dict, self.negative_mask_dict = get_masks_dicts(code_len, connections, pi)
+        self.mask_dict, self.negative_mask_dict = get_masks_dicts(code_len, connections)
         self.num_stages = int(np.log2(code_len))
-        self.left_weights = nn.Parameter(torch.ones((self.num_stages, 2), device=self.device), requires_grad=False)
+        self.left_weights = nn.Parameter(torch.ones((self.num_stages, 2), device=DEVICE))
 
     def forward(self, right, left):
         for i in reversed(range(self.num_stages)):

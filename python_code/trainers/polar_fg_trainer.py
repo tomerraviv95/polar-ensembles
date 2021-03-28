@@ -2,6 +2,8 @@ from python_code.decoders.polar_fg_decoder import PolarFGDecoder
 from python_code.trainers.trainer import Trainer
 from globals import CONFIG, DEVICE
 
+EARLY_TERMINATION = True
+
 
 class PolarFGTrainer(Trainer):
     """
@@ -18,11 +20,11 @@ class PolarFGTrainer(Trainer):
                                     crc=CONFIG.crc,
                                     iteration_num=CONFIG.iteration_num,
                                     clipping_val=CONFIG.clipping_val,
-                                    filter_in_iterations_eval=CONFIG.filter_in_iterations_eval,
+                                    early_termination=EARLY_TERMINATION,
                                     device=DEVICE)
 
 
 if __name__ == "__main__":
     # load config and run evaluation of decoder
     dec = PolarFGTrainer()
-    ber, fer = dec.evaluate()
+    ber, fer = dec.train()

@@ -20,8 +20,7 @@ class PolarFGDecoder(torch.nn.Module):
     See that after every decoding iteration (L->R>L) we usually stop decoding if some stopping criterion holds.
     """
 
-    def __init__(self, code_len, info_len, design_SNR, crc, iteration_num, clipping_val=15,
-                 filter_in_iterations_eval=False, device='cpu'):
+    def __init__(self, code_len, info_len, design_SNR, crc, iteration_num, clipping_val, early_termination, device):
         super().__init__()
 
         self.device = device
@@ -32,7 +31,7 @@ class PolarFGDecoder(torch.nn.Module):
         self.design_snr = design_SNR
         self.clipping_val = clipping_val
         self.factor_graph = initialize_factor_graph(code_len, device)
-        self.info_ind, self.crc_ind = initialize_polar_code(code_len, info_len, design_SNR, crc, device=device)
+        self.info_ind, self.crc_ind = initialize_polar_code(code_len, info_len, design_SNR, crc, device)
         if len(crc):
             self.total_info_bits = (self.info_ind.float() + self.crc_ind.float()).byte()
         else:
@@ -42,13 +41,13 @@ class PolarFGDecoder(torch.nn.Module):
 
         # model parameters
         self.num_hidden_layers = iteration_num
-        self.filter_in_iterations_eval = filter_in_iterations_eval
+        self.filter_in_iterations_eval = early_termination
         self._build_model()
 
     def _build_model(self):
         # define layers
-        self.iterate_right_layer = IterateRightLayer(self.code_len, self.clipping_val, device=self.device)
-        self.iterate_left_layer = IterateLeftLayer(self.code_len, self.clipping_val, device=self.device)
+        self.iterate_right_layer = IterateRightLayer(self.code_len, self.clipping_val)
+        self.iterate_left_layer = IterateLeftLayer(self.code_len, self.clipping_val)
 
     def _initialize_graph(self, x, total_info_bits):
         """
