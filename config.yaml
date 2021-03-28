@@ -1,0 +1,22 @@
+# logging params
+output_dir: '/home/user/thesis/project_dir/PartiallyPermutedPolar'
+run_name: 'test'
+
+# decoder params
+code_type: Polar
+code_len: 64
+info_len: 32
+clipping_val: 15
+iteration_num: 5
+design_SNR: 0.6
+crc: [] # [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1] #CRC-16
+
+# data params
+batch_size: 10000  # number of samples per snr -> total = minibatch * #snrs
+filter_in_iterations_eval: True  # True = early termination
+val_SNR_start: 1
+val_SNR_end: 6
+val_num_SNR: 6
+noise_seed: 345000
+word_seed: 786000
+test_errors: 200
