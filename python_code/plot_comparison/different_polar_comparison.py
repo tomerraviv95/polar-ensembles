@@ -1,5 +1,5 @@
-from utils.parse_config import parse_config_file
-from evaluators.polar_FG_evaluator import PolarFGEvaluator
+from python_code.utils.parse_config import parse_config_file
+from python_code.evaluators.polar_FG_evaluator import PolarFGEvaluator
 import matplotlib.pyplot as plt
 
 code_len_vec = [32, 64, 128]

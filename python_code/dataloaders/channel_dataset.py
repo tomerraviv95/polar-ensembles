@@ -1,9 +1,10 @@
-import torch
-import collections
+from python_code.utils.channel_model import BPSKmodulation, AWGN
+from python_code.polar_codes import encoding
 from torch.utils.data import Dataset
-from polar_codes import encoding
-from utils.channel_model import *
 import concurrent.futures
+import collections
+import numpy as np
+import torch
 
 
 class ChannelModelDataset(Dataset):

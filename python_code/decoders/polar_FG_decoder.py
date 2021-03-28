@@ -1,9 +1,9 @@
 import torch
 import numpy as np
-from basic.polar_nn import IterateLeftLayer, IterateRightLayer
-from polar_codes.initialization import initialize_factor_graph, initialize_polar_code
-from polar_codes.stop_condition import crc_criterion, generator_criterion
-from crc_codes.crc import create_crc_matrices
+from python_code.basic.polar_nn import IterateLeftLayer, IterateRightLayer
+from python_code.polar_codes.initialization import initialize_factor_graph, initialize_polar_code
+from python_code.polar_codes.stop_condition import crc_criterion, generator_criterion
+from python_code.crc_codes.crc import create_crc_matrices
 
 
 def llr_to_bits(x):

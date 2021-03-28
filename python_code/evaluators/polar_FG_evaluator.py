@@ -1,8 +1,7 @@
-from basic.entity import Entity
-from decoders.polar_FG_decoder import PolarFGDecoder
-from dataloaders.channel_dataset import *
-from utils.channel_model import *
-from utils.evaluation_criterion import calculate_accuracy
+from python_code.basic.entity import Entity
+from python_code.decoders.polar_FG_decoder import PolarFGDecoder
+from python_code.dataloaders.channel_dataset import *
+from python_code.utils.evaluation_criterion import calculate_accuracy
 import time
 import torch
 import multiprocessing

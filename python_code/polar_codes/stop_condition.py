@@ -1,5 +1,5 @@
 import torch
-from crc_codes.crc import encode_by_generator_matrix
+from python_code.crc_codes.crc import encode_by_generator_matrix
 
 
 def generator_criterion(x, u, factor_graph, not_satisfied):

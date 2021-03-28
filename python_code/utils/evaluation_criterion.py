@@ -1,4 +1,3 @@
-import polar_codes.encoding as encoding
 import torch
 
 
