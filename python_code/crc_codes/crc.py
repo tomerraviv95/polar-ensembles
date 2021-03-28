@@ -1,5 +1,6 @@
-import torch
+from typing import Tuple
 import numpy as np
+import torch
 
 
 def encode_by_generator_matrix(words, poly, crc_gm):
@@ -10,8 +11,7 @@ def encode_by_generator_matrix(words, poly, crc_gm):
     return encoded_words[:, :len(poly)]
 
 
-def create_crc_matrices(info_len: int, crc: list, eye: str, device: torch.device) -> (
-torch.ByteTensor, torch.ByteTensor):
+def create_crc_matrices(info_len: int, crc: list, eye: str, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Creates the G matrix for the CRC code (which encodes the info bits)
     Allows the G matrix to have the CRC before or after the systematic part

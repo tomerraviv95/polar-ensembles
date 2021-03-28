@@ -1,7 +1,3 @@
-# logging params
-output_dir: '/home/user/thesis/project_dir/PartiallyPermutedPolar'
-run_name: 'test'
-
 # decoder params
 code_type: Polar
 code_len: 64
@@ -20,3 +16,4 @@ val_num_SNR: 6
 noise_seed: 345000
 word_seed: 786000
 test_errors: 200
+test_on_zero_word: False

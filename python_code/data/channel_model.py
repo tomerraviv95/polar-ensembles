@@ -1,7 +1,6 @@
 import numpy as np
 
 
-#
 def BPSKmodulation(x: np.array):
     """
     BPSK modulation 0->1, 1->-1

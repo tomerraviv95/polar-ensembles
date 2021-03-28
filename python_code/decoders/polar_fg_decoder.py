@@ -1,9 +1,9 @@
-import torch
-import numpy as np
-from python_code.basic.polar_nn import IterateLeftLayer, IterateRightLayer
 from python_code.polar_codes.initialization import initialize_factor_graph, initialize_polar_code
 from python_code.polar_codes.stop_condition import crc_criterion, generator_criterion
+from python_code.polar_codes.polar_nn import IterateLeftLayer, IterateRightLayer
 from python_code.crc_codes.crc import create_crc_matrices
+import numpy as np
+import torch
 
 
 def llr_to_bits(x):
@@ -19,6 +19,7 @@ class PolarFGDecoder(torch.nn.Module):
     The decoder class. Calls the graph building process and implements the decoding algorithm.
     See that after every decoding iteration (L->R>L) we usually stop decoding if some stopping criterion holds.
     """
+
     def __init__(self, code_len, info_len, design_SNR, crc, iteration_num, clipping_val=15,
                  filter_in_iterations_eval=False, device='cpu'):
         super().__init__()
@@ -60,7 +61,7 @@ class PolarFGDecoder(torch.nn.Module):
         left[:, -1] = x
         return right, left
 
-    def forward(self, rx:torch.Tensor):
+    def forward(self, rx: torch.Tensor):
         """
         compute forward pass in the network
         :param rx: [batch_size,N]
