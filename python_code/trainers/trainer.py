@@ -1,13 +1,17 @@
-from torch.nn import BCEWithLogitsLoss
-from torch.optim import SGD, Adam, RMSprop
-
+from dir_definitions import WEIGHTS_DIR, CONFIG_PATH
 from python_code.utils.evaluation_criterion import calculate_accuracy
 from python_code.data.channel_model import BPSKmodulation, AWGN
+from torch.nn import BCEWithLogitsLoss
+from torch.optim import SGD, Adam, RMSprop
 from python_code.data.channel_dataset import ChannelModelDataset
 from globals import CONFIG, DEVICE
+from shutil import copyfile
 import numpy as np
 import torch
 import time
+import os
+
+EARLY_STOPPING_PATIENCE = 3
 
 
 class Trainer(object):
@@ -19,6 +23,7 @@ class Trainer(object):
     def __init__(self):
         self.load_model()
         self.setup_dataloader()
+        self.setup_save_dir()
 
     def setup_dataloader(self):
         rand_gen = np.random.RandomState(CONFIG.noise_seed)
@@ -43,7 +48,7 @@ class Trainer(object):
                                                            info_ind=self.model.info_ind,
                                                            crc_ind=self.model.crc_ind,
                                                            crc_gm=self.model.crc_gm,
-                                                           system_enc=CONFIG.systematic_encoding,
+                                                           system_enc=False,
                                                            crc_len=len(CONFIG.crc),
                                                            factor_graph=self.model.factor_graph)
                                 for phase in ['train', 'val']}
@@ -53,6 +58,13 @@ class Trainer(object):
     # empty method for loading the model
     def load_model(self):
         self.model = None
+
+    def setup_save_dir(self):
+        self.weights_dir = os.path.join(WEIGHTS_DIR, CONFIG.run_name)
+        if not os.path.exists(self.weights_dir):
+            os.makedirs(self.weights_dir)
+            # save config in output dir
+            copyfile(CONFIG_PATH, os.path.join(self.weights_dir, "config.yaml"))
 
     def evaluate(self):
         """
@@ -110,8 +122,24 @@ class Trainer(object):
             raise ValueError('No such loss type!')
 
     # calculate train loss
-    def calc_loss(self, decision, labels):
-        return self.criterion(decision, labels)
+    def calc_loss(self, prediction, labels):
+        return self.criterion(prediction, labels)
+
+    def check_early_stopping(self, ber, prev_ber, early_stopping_bers):
+        if ber > prev_ber:
+            early_stopping_bers.append(0)
+        else:
+            early_stopping_bers = []
+
+        if len(early_stopping_bers) > EARLY_STOPPING_PATIENCE:
+            return True
+        return False
+
+    def save_weights(self, epoch):
+        torch.save({'model_state_dict': self.model.state_dict(),
+                    'optimizer_state_dict': self.optimizer.state_dict(),
+                    'epoch': epoch},
+                   os.path.join(self.weights_dir, f'epoch_{epoch}.pt'))
 
     ############
     # Training #
@@ -121,6 +149,8 @@ class Trainer(object):
         self.loss_setup()
         snr_range = self.snr_range['train']
         self.evaluate()
+        ber_total, fer_total, best_ber = 1, 1, 1
+        early_stopping_bers = []
         for epoch in range(1, CONFIG.num_of_epochs + 1):
             print(f'Epoch {epoch}')
             for j, snr in enumerate(snr_range):
@@ -129,14 +159,32 @@ class Trainer(object):
                 rx_per_snr = rx_per_snr.to(device=DEVICE)
                 target_per_snr = target_per_snr.to(device=DEVICE)
 
-                output_list, not_satisfied_list = self.model(rx_per_snr)
+                prediction = self.model(rx_per_snr)
 
                 # calculate loss
-                loss = self.calc_loss(decision=output_list[-1], labels=target_per_snr)
+                loss = self.calc_loss(prediction=prediction, labels=target_per_snr)
 
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
 
             if epoch % (CONFIG.validation_epochs) == 0:
-                self.evaluate()
+                prev_ber_total = ber_total
+                ber_total, fer_total = self.evaluate()
+
+                # extract relevant ber, either scalar or last value in list
+                if type(ber_total) == list and type(prev_ber_total) == list:
+                    ber, prev_ber = ber_total[-1], prev_ber_total[-1]
+                else:
+                    ber, prev_ber = ber_total, prev_ber_total
+
+                # save weights if model is improved compared to best ber
+                if ber < best_ber:
+                    self.save_weights(epoch)
+                    best_ber = ber
+
+                # early stopping
+                if CONFIG.early_stopping and self.check_early_stopping(ber, prev_ber, early_stopping_bers):
+                    break
+
+        return ber_total, fer_total

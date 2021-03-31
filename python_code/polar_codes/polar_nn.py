@@ -51,7 +51,6 @@ class IterateRightLayer(torch.nn.Module):
             left_prev1 = left[:, i + 1, self.mask_dict[i]]
             right_prev0 = right[:, i, self.negative_mask_dict[i]]
             right_prev1 = right[:, i, self.mask_dict[i]]
-
             right[:, i + 1, self.mask_dict[i]] = self.right_weights[i, 0] * min_sum(right_prev1,
                                                                                     left_prev0 + right_prev0)
             right[:, i + 1, self.negative_mask_dict[i]] = self.right_weights[i, 1] * min_sum(right_prev1,
