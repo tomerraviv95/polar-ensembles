@@ -8,13 +8,13 @@ design_SNR: 0.6
 crc: [] # [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1] #CRC-16
 
 # data params
-val_batch_size: 1000  # number of samples per snr -> total = minibatch * #snrs
-val_SNR_start: 0
-val_SNR_end: 4.5
-val_num_SNR: 10
+val_batch_size: 20000  # number of samples per snr -> total = minibatch * #snrs
+val_SNR_start: 3
+val_SNR_end: 3
+val_num_SNR: 1
 noise_seed: 345000
 word_seed: 786000
-test_errors: 250
+test_errors: 200
 
 # nn training
 run_name: 'test'
@@ -24,7 +24,7 @@ optimizer_type: 'SGD'
 criterion_type: 'BCE'
 num_of_epochs: 50
 validation_epochs: 1
-train_minibatch_size: 500
+train_minibatch_size: 1000
 train_SNR_start: 4
 train_SNR_end: 7
 train_num_SNR: 4
