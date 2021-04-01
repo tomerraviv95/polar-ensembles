@@ -13,8 +13,9 @@ import os
 
 
 class Plotter:
-    def __init__(self, run_over):
+    def __init__(self, run_over, type):
         self.run_over = run_over
+        self.type = type
 
     def get_fer_plot(self, dec: Trainer, method_name: str):
         print(method_name)
@@ -27,21 +28,24 @@ class Plotter:
         # if plot already exists, and the run_over flag is false - load the saved plot
         if os.path.isfile(plots_path) and not self.run_over:
             print("Loading plots")
-            fer_total = load_pkl(plots_path)
+            saved_dict = load_pkl(plots_path)
+            graph = saved_dict[self.type]
         else:
             # otherwise - run again
             print("calculating fresh")
-            ber_total, fer_total = dec.train()
-            save_pkl(plots_path, fer_total)
-        return fer_total
+            ber_total, fer_total = dec.evaluate()
+            to_save_dict = {'BER': ber_total, 'FER': fer_total}
+            save_pkl(plots_path, to_save_dict)
+            graph = to_save_dict[self.type]
+        return graph
 
-    def plot(self, config_params, graph_params):
+    def plot(self, graph_params, config_params):
         val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
         # set all parameters based on dict
         for k, v in config_params.items():
             CONFIG.set_value(k, v)
         dec = PolarFGTrainer()
-        fer = self.get_fer_plot(dec, self.run_over)
+        fer = self.get_fer_plot(dec, graph_params['label'])
         plt.plot(val_SNRs, fer,
                  label=graph_params['label'],
                  color=graph_params['color'],
@@ -51,12 +55,12 @@ class Plotter:
         plt.xlabel("Eb/N0(dB)")
         plt.ylabel("FER")
         plt.grid(True, which='both')
-        plt.legend(loc='upper left', prop={'size': 15})
+        plt.legend(loc='lower left', prop={'size': 15})
         plt.xlim((val_SNRs[0] - 0.5, val_SNRs[-1] + 0.5))
 
 
 if __name__ == '__main__':
-    plotter = Plotter(run_over=False)
+    plotter = Plotter(run_over=False, type='FER')
     plotter.plot(*get_polar_64_32())
     plotter.plot(*get_weighted_polar_64_32())
     plotter.plot(*get_polar_128_64())

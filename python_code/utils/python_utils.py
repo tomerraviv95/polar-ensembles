@@ -1,8 +1,10 @@
 import pickle as pkl
+from typing import Dict
+
 import numpy as np
 
 
-def save_pkl(pkls_path: str, array: np.ndarray):
+def save_pkl(pkls_path: str, array: Dict):
     output = open(pkls_path, 'wb')
     pkl.dump(array, output)
     output.close()
