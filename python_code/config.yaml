@@ -1,7 +1,7 @@
 # decoder params
 code_type: Polar
-code_len: 1024
-info_len: 512
+code_len: 64
+info_len: 32
 clipping_val: 20
 iteration_num: 5
 design_SNR: 0.6
@@ -9,21 +9,22 @@ crc: [] # [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1] #CRC-16
 
 # data params
 val_batch_size: 10000  # number of samples per snr -> total = minibatch * #snrs
-val_SNR_start: 4
+val_SNR_start: 1
 val_SNR_end: 4
-val_num_SNR: 1
+val_num_SNR: 4
 noise_seed: 345000
 word_seed: 786000
-test_errors: 250
+test_errors: 1
 
 # nn training
 run_name: 'test'
+load_weights: False
 lr: 0.001
 optimizer_type: 'SGD'
 criterion_type: 'BCE'
 num_of_epochs: 50
 validation_epochs: 1
-train_minibatch_size: 1000
+train_minibatch_size: 500
 train_SNR_start: 4
 train_SNR_end: 7
 train_num_SNR: 4

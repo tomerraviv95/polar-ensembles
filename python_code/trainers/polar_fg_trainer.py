@@ -41,4 +41,4 @@ class PolarFGTrainer(Trainer):
 if __name__ == "__main__":
     # load config and run evaluation of decoder
     dec = PolarFGTrainer()
-    ber, fer = dec.train()
+    ber, fer = dec.evaluate()

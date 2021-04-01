@@ -25,6 +25,9 @@ class Trainer(object):
         self.setup_dataloader()
         self.setup_save_dir()
 
+        if CONFIG.load_weights:
+            self.load_weights()
+
     def setup_dataloader(self):
         rand_gen = np.random.RandomState(CONFIG.noise_seed)
         word_rand_gen = np.random.RandomState(CONFIG.word_seed)
@@ -140,6 +143,26 @@ class Trainer(object):
                     'optimizer_state_dict': self.optimizer.state_dict(),
                     'epoch': epoch},
                    os.path.join(self.weights_dir, f'epoch_{epoch}.pt'))
+
+    def load_weights(self):
+        """
+        Loads detector's weights defined by the [snr,gamma] from checkpoint, if exists
+        """
+        if os.path.isdir(self.weights_dir):
+            files = os.listdir(self.weights_dir)
+            names = []
+            for file in files:
+                if file.startswith("epoch_"):
+                    names.append(int(file.split('.')[0].split('_')[1]))
+            names.sort()
+            print(f'loading model from epoch {names[-1]}')
+            checkpoint = torch.load(os.path.join(self.weights_dir, 'epoch_' + str(names[-1]) + '.pt'))
+            try:
+                self.model.load_state_dict(checkpoint['model_state_dict'])
+            except Exception:
+                raise ValueError("Wrong run directory!!!")
+        else:
+            print(f'No such dir!!! starting from scratch')
 
     ############
     # Training #
