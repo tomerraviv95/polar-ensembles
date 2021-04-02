@@ -26,16 +26,7 @@ class PolarFGTrainer(Trainer):
     # calculate train loss
     def calc_loss(self, prediction, labels):
         output_list, not_satisfied_list = prediction
-        if CONFIG.multiloss:
-            total_loss = 0
-            for output, not_satisfied in zip(output_list, not_satisfied_list):
-                if type(output) == int:
-                    break
-                total_loss += self.criterion(output, labels[not_satisfied])
-            # total_loss+=self.criterion(output_list[-1], labels)
-            return total_loss
-        else:
-            return self.criterion(output_list[-1], labels)
+        return self.criterion(output_list[-1], labels)
 
 
 if __name__ == "__main__":

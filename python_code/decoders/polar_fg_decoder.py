@@ -46,8 +46,8 @@ class PolarFGDecoder(torch.nn.Module):
 
     def _build_model(self):
         # define layers
-        self.iterate_right_layer = IterateRightLayer(self.code_len, self.clipping_val)
-        self.iterate_left_layer = IterateLeftLayer(self.code_len, self.clipping_val)
+        self.iterate_right_layer = IterateRightLayer(self.code_len, self.clipping_val, self.num_hidden_layers)
+        self.iterate_left_layer = IterateLeftLayer(self.code_len, self.clipping_val, self.num_hidden_layers)
 
     def _initialize_graph(self, x, total_info_bits):
         """
@@ -84,10 +84,10 @@ class PolarFGDecoder(torch.nn.Module):
 
         for i in range(self.num_hidden_layers):
             # iterate right
-            right[not_satisfied] = self.iterate_right_layer(right[not_satisfied], left[not_satisfied])
+            right[not_satisfied] = self.iterate_right_layer(right[not_satisfied], left[not_satisfied], i)
 
             # iterate left
-            left[not_satisfied] = self.iterate_left_layer(right[not_satisfied], left[not_satisfied])
+            left[not_satisfied] = self.iterate_left_layer(right[not_satisfied], left[not_satisfied], i)
 
             u = left[not_satisfied, 0] + right[not_satisfied, 0]
             x = left[not_satisfied, self.num_stages] + right[not_satisfied, self.num_stages]
@@ -96,7 +96,6 @@ class PolarFGDecoder(torch.nn.Module):
 
             not_satisfied_list[i] = not_satisfied.clone()
             u_list[-1][not_satisfied] = u_list[i].clone()
-
             if self.filter_in_iterations_eval:
                 if len(self.poly):
                     not_satisfied = crc_criterion(llr_to_bits(u), self.info_ind, self.crc_ind, self.poly,

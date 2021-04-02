@@ -6,7 +6,7 @@ def get_polar_64_32():
 
 def get_weighted_polar_64_32():
     graph_params = {'label': 'Weighted Polar Code (64,32)', 'color': 'red', 'marker': 'x'}
-    runs_params = {'code_len': 64, 'info_len': 32, 'run_name': 'polar_fg_64_32', 'load_weights': False}
+    runs_params = {'code_len': 64, 'info_len': 32, 'run_name': 'polar_fg_64_32', 'load_weights': True}
     return graph_params, runs_params
 
 

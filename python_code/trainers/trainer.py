@@ -11,7 +11,7 @@ import torch
 import time
 import os
 
-EARLY_STOPPING_PATIENCE = 3
+EARLY_STOPPING_PATIENCE = 5
 
 
 class Trainer(object):
@@ -131,8 +131,6 @@ class Trainer(object):
     def check_early_stopping(self, ber, prev_ber, early_stopping_bers):
         if ber > prev_ber:
             early_stopping_bers.append(0)
-        else:
-            early_stopping_bers = []
 
         if len(early_stopping_bers) > EARLY_STOPPING_PATIENCE:
             return True
@@ -190,16 +188,16 @@ class Trainer(object):
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-
+            # print(list(self.model.parameters()))
             if epoch % (CONFIG.validation_epochs) == 0:
                 prev_ber_total = ber_total
                 ber_total, fer_total = self.evaluate()
 
                 # extract relevant ber, either scalar or last value in list
-                if type(ber_total) == list and type(prev_ber_total) == list:
-                    ber, prev_ber = ber_total[-1], prev_ber_total[-1]
-                else:
-                    ber, prev_ber = ber_total, prev_ber_total
+                if type(ber_total) == list:
+                    raise ValueError('Must run training with single eval SNR!!!')
+
+                ber, prev_ber = ber_total, prev_ber_total
 
                 # save weights if model is improved compared to best ber
                 if ber < best_ber:
