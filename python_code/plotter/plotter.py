@@ -1,8 +1,6 @@
-import datetime
-
 from python_code.plotter.plotter_types import get_polar_64_32, get_weighted_polar_64_32, get_polar_128_64, \
-    get_weighted_polar_128_64, get_polar_1024_512, get_weighted_polar_1024_512, get_polar_2048_1024, \
-    get_weighted_polar_2048_1024
+    get_weighted_polar_128_64, get_polar_1024_512, get_weighted_polar_1024_512, get_polar_256_128, \
+    get_weighted_polar_256_128
 from python_code.trainers.polar_fg_trainer import PolarFGTrainer
 from python_code.utils.python_utils import load_pkl, save_pkl
 from python_code.trainers.trainer import Trainer
@@ -11,6 +9,7 @@ from dir_definitions import PLOTS_DIR, FIGURES_DIR
 import matplotlib.pyplot as plt
 from globals import CONFIG
 import numpy as np
+import datetime
 import os
 
 
@@ -52,7 +51,21 @@ class Plotter:
                  label=graph_params['label'],
                  color=graph_params['color'],
                  marker=graph_params['marker'])
-        plt.title(f'{self.type} Comparison of Different Polar Codes')
+        plt.title(f'{self.type} Comparison')
+        plt.yscale('log')
+        plt.xlabel("Eb/N0(dB)")
+        plt.ylabel(self.type)
+        plt.grid(True, which='both')
+        plt.legend(loc='lower left', prop={'size': 15})
+        plt.xlim((val_SNRs[0] - 0.5, val_SNRs[-1] + 0.5))
+
+    def plot_curve(self, fer, graph_params):
+        val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
+        plt.plot(val_SNRs, fer,
+                 label=graph_params['label'],
+                 color=graph_params['color'],
+                 marker=graph_params['marker'])
+        plt.title(f'{self.type} Comparison')
         plt.yscale('log')
         plt.xlabel("Eb/N0(dB)")
         plt.ylabel(self.type)
@@ -62,15 +75,26 @@ class Plotter:
 
 
 if __name__ == '__main__':
-    plotter = Plotter(run_over=False, type='BER')
+    plotter = Plotter(run_over=False, type='FER')
     plotter.plot(*get_polar_64_32())
-    plotter.plot(*get_weighted_polar_64_32())
-    plotter.plot(*get_polar_128_64())
-    plotter.plot(*get_weighted_polar_128_64())
-    plotter.plot(*get_polar_1024_512())
-    plotter.plot(*get_weighted_polar_1024_512())
-    plotter.plot(*get_polar_2048_1024())
-    plotter.plot(*get_weighted_polar_2048_1024())
+
+    # plotter.plot(*get_weighted_polar_64_32())
+
+    # plotter.plot(*get_polar_128_64())
+
+    # plotter.plot(*get_weighted_polar_128_64())
+
+    # plotter.plot(*get_polar_256_128())
+
+    # plotter.plot(*get_weighted_polar_256_128())
+
+    # plotter.plot(*get_polar_1024_512())
+
+    # plotter.plot(*get_weighted_polar_1024_512())
+
+    # gross_curve = [4e-2, 2e-2, 6.5e-3, 3e-3, 1e-3, 3e-4, 9e-5]
+    # plotter.plot_curve(gross_curve, {'label': 'Gross BP-5', 'color': 'blue', 'marker': 'o'})
+
     # path for the saved figure
     current_day_time = datetime.datetime.now()
     folder_name = f'{current_day_time.month}-{current_day_time.day}-{current_day_time.hour}-{current_day_time.minute}'

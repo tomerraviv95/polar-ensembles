@@ -6,18 +6,19 @@ clipping_val: 50
 iteration_num: 5
 design_SNR: 0.6
 crc: [] # [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1] #CRC-16
+early_stopping: True
 
 # data params
-val_batch_size: 20000  # number of samples per snr -> total = minibatch * #snrs
-val_SNR_start: 4
-val_SNR_end: 4
-val_num_SNR: 1
+val_batch_size: 50000  # number of samples per snr -> total = minibatch * #snrs
+val_SNR_start: 3.5
+val_SNR_end: 6.5
+val_num_SNR: 7
 noise_seed: 345000
 word_seed: 786000
 test_errors: 200
 
 # nn training
-run_name: 'test3'
+run_name: 'test'
 load_weights: False
 lr: 0.001
 optimizer_type: 'ADAM'
@@ -28,4 +29,3 @@ train_minibatch_size: 128
 train_SNR_start: 5
 train_SNR_end: 8
 train_num_SNR: 4
-early_stopping: True

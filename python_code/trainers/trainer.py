@@ -188,7 +188,7 @@ class Trainer(object):
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-            # print(list(self.model.parameters()))
+
             if epoch % (CONFIG.validation_epochs) == 0:
                 prev_ber_total = ber_total
                 ber_total, fer_total = self.evaluate()
