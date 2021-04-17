@@ -2,20 +2,20 @@
 code_type: Polar
 code_len: 64
 info_len: 32
-clipping_val: 50
+clipping_val: 20
 iteration_num: 5
 design_SNR: 0.6
 crc: [] # [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1] #CRC-16
 early_stopping: True
 
 # data params
-val_batch_size: 50000  # number of samples per snr -> total = minibatch * #snrs
-val_SNR_start: 3.5
-val_SNR_end: 6.5
-val_num_SNR: 7
+val_batch_size: 1000  # number of samples per snr -> total = minibatch * #snrs
+val_SNR_start: 4
+val_SNR_end: 4
+val_num_SNR: 1
 noise_seed: 345000
 word_seed: 786000
-test_errors: 200
+test_errors: 10
 
 # nn training
 run_name: 'test'

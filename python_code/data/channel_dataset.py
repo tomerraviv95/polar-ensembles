@@ -8,9 +8,9 @@ import torch
 
 
 class ChannelModelDataset(Dataset):
-    def __init__(self, code_len, info_len, code_type, use_llr=True, modulation=BPSKmodulation, channel=AWGN,
-                 batch_size=None, snr_range=None, zero_word_only=True,
-                 random=None, wordRandom=None, clipping_val=15, crc_len=0, **code_params):
+    def __init__(self, code_len, info_len, code_type, clipping_val, use_llr=True, modulation=BPSKmodulation,
+                 channel=AWGN, batch_size=None, snr_range=None, zero_word_only=True, random=None, wordRandom=None,
+                 crc_len=0, **code_params):
         self.code_len = code_len
         self.info_len = info_len
         self.crc_len = crc_len
@@ -27,12 +27,13 @@ class ChannelModelDataset(Dataset):
 
         if code_type == 'Polar':
             try:
-                self.encoding = lambda u: encoding.encode(target=u, crc_gm=code_params['crc_gm'].cpu().numpy(),
+                self.encoding = lambda u: encoding.encode(target=u,
+                                                          code_gm=code_params['code_gm'].cpu().numpy(),
+                                                          crc_gm=code_params['crc_gm'].cpu().numpy(),
                                                           code_len=self.code_len,
                                                           info_ind=code_params['info_ind'].cpu().numpy(),
                                                           crc_ind=code_params['crc_ind'].cpu().numpy(),
-                                                          system_enc=code_params['system_enc'],
-                                                          factor_graph=code_params['factor_graph'].cpu().numpy())
+                                                          system_enc=code_params['system_enc'])
             except:
                 raise Exception('Polar code must have information bit set and flag for systematic encoding')
 

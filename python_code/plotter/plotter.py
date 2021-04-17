@@ -1,7 +1,7 @@
 from python_code.plotter.plotter_types import get_polar_64_32, get_weighted_polar_64_32, get_polar_128_64, \
     get_weighted_polar_128_64, get_polar_1024_512, get_weighted_polar_1024_512, get_polar_256_128, \
     get_weighted_polar_256_128
-from python_code.trainers.polar_fg_trainer import PolarFGTrainer
+from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.utils.python_utils import load_pkl, save_pkl
 from python_code.trainers.trainer import Trainer
 from python_code.plotter.plotter_config import *
@@ -75,14 +75,15 @@ class Plotter:
 
 
 if __name__ == '__main__':
-    plotter = Plotter(run_over=False, type='FER')
-    plotter.plot(*get_polar_64_32())
+    plotter = Plotter(run_over=True, type='FER')
+
+    # plotter.plot(*get_polar_64_32())
 
     # plotter.plot(*get_weighted_polar_64_32())
 
-    # plotter.plot(*get_polar_128_64())
+    plotter.plot(*get_polar_128_64())
 
-    # plotter.plot(*get_weighted_polar_128_64())
+    plotter.plot(*get_weighted_polar_128_64())
 
     # plotter.plot(*get_polar_256_128())
 

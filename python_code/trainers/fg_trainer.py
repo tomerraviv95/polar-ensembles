@@ -1,4 +1,4 @@
-from python_code.decoders.polar_fg_decoder import PolarFGDecoder
+from python_code.decoders.fg_decoder import FGDecoder
 from python_code.trainers.trainer import Trainer
 from globals import CONFIG, DEVICE
 
@@ -14,14 +14,14 @@ class PolarFGTrainer(Trainer):
         super().__init__()
 
     def load_model(self):
-        self.model = PolarFGDecoder(code_len=CONFIG.code_len,
-                                    info_len=CONFIG.info_len,
-                                    design_SNR=CONFIG.design_SNR,
-                                    crc=CONFIG.crc,
-                                    iteration_num=CONFIG.iteration_num,
-                                    clipping_val=CONFIG.clipping_val,
-                                    early_termination=EARLY_TERMINATION,
-                                    device=DEVICE)
+        self.model = FGDecoder(code_len=CONFIG.code_len,
+                               info_len=CONFIG.info_len,
+                               design_SNR=CONFIG.design_SNR,
+                               crc=CONFIG.crc,
+                               iteration_num=CONFIG.iteration_num,
+                               clipping_val=CONFIG.clipping_val,
+                               early_termination=EARLY_TERMINATION,
+                               device=DEVICE)
 
     # calculate train loss
     def calc_loss(self, prediction, labels):

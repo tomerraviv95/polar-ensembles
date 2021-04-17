@@ -1,6 +1,7 @@
 import numpy as np
 
-def encode(target, crc_gm, code_len, info_ind, crc_ind, system_enc: bool = False, factor_graph: np.array = None):
+
+def encode(target, code_gm, crc_gm, code_len, info_ind, crc_ind, system_enc: bool = False):
     """
     Input: u - Information matrix with Batch x info (each row is information bits), G - Generator matrix with info x N
     Output: x - Encoded matrix Batch x code_len
@@ -15,14 +16,7 @@ def encode(target, crc_gm, code_len, info_ind, crc_ind, system_enc: bool = False
     else:
         u[:, info_ind] = target
 
-    # bit reversal
-    # bitreversedindices = np.zeros(code_len, dtype=int)
-    # for bit in range(code_len):
-    #     b = '{:0{width}b}'.format(bit, width=int(np.log2(code_len)))
-    #     bitreversedindices[bit] = int(b[::-1], 2)
-    # u = u[:, bitreversedindices]
-
-    x = transform_by_mat(u, factor_graph)
+    x = transform_by_mat(u, code_gm)
     if system_enc:  # TODO: check
         raise NotImplementedError
         # print("systematic")

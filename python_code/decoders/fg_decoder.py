@@ -2,19 +2,12 @@ from python_code.polar_codes.initialization import initialize_factor_graph, init
 from python_code.polar_codes.stop_condition import crc_criterion, generator_criterion
 from python_code.polar_codes.polar_nn import IterateLeftLayer, IterateRightLayer
 from python_code.crc_codes.crc import create_crc_matrices
+from python_code.utils.python_utils import llr_to_bits
 import numpy as np
 import torch
 
 
-def llr_to_bits(x):
-    """
-    num>0 -> 0
-    num<0 -> 1
-    """
-    return torch.round(torch.sigmoid(-x))
-
-
-class PolarFGDecoder(torch.nn.Module):
+class FGDecoder(torch.nn.Module):
     """
     The decoder class. Calls the graph building process and implements the decoding algorithm.
     See that after every decoding iteration (L->R>L) we usually stop decoding if some stopping criterion holds.
@@ -30,7 +23,7 @@ class PolarFGDecoder(torch.nn.Module):
         self.info_len = info_len
         self.design_snr = design_SNR
         self.clipping_val = clipping_val
-        self.factor_graph = initialize_factor_graph(code_len, device)
+        self.code_gm = initialize_factor_graph(code_len, device)
         self.info_ind, self.crc_ind = initialize_polar_code(code_len, info_len, design_SNR, crc, device)
         if len(crc):
             self.total_info_bits = (self.info_ind.float() + self.crc_ind.float()).byte()
@@ -101,7 +94,7 @@ class PolarFGDecoder(torch.nn.Module):
                     not_satisfied = crc_criterion(llr_to_bits(u), self.info_ind, self.crc_ind, self.poly,
                                                   self.crc_gm, not_satisfied)
                 else:
-                    not_satisfied = generator_criterion(llr_to_bits(x), llr_to_bits(u), self.factor_graph,
+                    not_satisfied = generator_criterion(llr_to_bits(x), llr_to_bits(u), self.code_gm,
                                                         not_satisfied)
             if not_satisfied.size(0) == 0:
                 break

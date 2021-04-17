@@ -1,7 +1,6 @@
-import pickle as pkl
 from typing import Dict
-
-import numpy as np
+import pickle as pkl
+import torch
 
 
 def save_pkl(pkls_path: str, array: Dict):
@@ -13,3 +12,11 @@ def save_pkl(pkls_path: str, array: Dict):
 def load_pkl(pkls_path: str):
     output = open(pkls_path, 'rb')
     return pkl.load(output)
+
+
+def llr_to_bits(x):
+    """
+    num>0 -> 0
+    num<0 -> 1
+    """
+    return torch.round(torch.sigmoid(-x))

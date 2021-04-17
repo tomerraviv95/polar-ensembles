@@ -11,6 +11,8 @@ import torch
 import time
 import os
 
+from python_code.utils.python_utils import llr_to_bits
+
 EARLY_STOPPING_PATIENCE = 5
 
 
@@ -53,7 +55,7 @@ class Trainer(object):
                                                            crc_gm=self.model.crc_gm,
                                                            system_enc=False,
                                                            crc_len=len(CONFIG.crc),
-                                                           factor_graph=self.model.factor_graph)
+                                                           code_gm=self.model.code_gm)
                                 for phase in ['train', 'val']}
         self.dataloaders = {phase: torch.utils.data.DataLoader(self.channel_dataset[phase]) for phase in
                             ['train', 'val']}
@@ -104,7 +106,7 @@ class Trainer(object):
 
         # decode and calculate accuracy
         output_list, not_satisfied_list = self.model(rx_per_snr)
-        decoded_words = torch.round(torch.sigmoid(-output_list[-1]))
+        decoded_words = llr_to_bits(output_list[-1])
 
         return calculate_accuracy(decoded_words, target_per_snr, DEVICE)
 
