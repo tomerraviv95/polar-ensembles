@@ -1,3 +1,4 @@
+from python_code.utils.python_utils import llr_to_bits
 from python_code.decoders.fg_decoder import FGDecoder
 from python_code.trainers.trainer import Trainer
 from globals import CONFIG, DEVICE
@@ -22,11 +23,15 @@ class PolarFGTrainer(Trainer):
                                clipping_val=CONFIG.clipping_val,
                                early_termination=EARLY_TERMINATION,
                                device=DEVICE)
+        self.decoder_name = 'FG'
 
     # calculate train loss
     def calc_loss(self, prediction, labels):
         output_list, not_satisfied_list = prediction
         return self.criterion(output_list[-1], labels)
+
+    def decode(self, soft_values):
+        return llr_to_bits(soft_values)
 
 
 if __name__ == "__main__":

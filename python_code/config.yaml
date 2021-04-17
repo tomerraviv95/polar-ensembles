@@ -9,13 +9,13 @@ crc: [] # [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1] #CRC-16
 early_stopping: True
 
 # data params
-val_batch_size: 1000  # number of samples per snr -> total = minibatch * #snrs
-val_SNR_start: 4
-val_SNR_end: 4
+val_batch_size: 100  # number of samples per snr -> total = minibatch * #snrs
+val_SNR_start: 6
+val_SNR_end: 6
 val_num_SNR: 1
 noise_seed: 345000
 word_seed: 786000
-test_errors: 10
+test_errors: 100
 
 # nn training
 run_name: 'test'
@@ -23,9 +23,9 @@ load_weights: False
 lr: 0.001
 optimizer_type: 'ADAM'
 criterion_type: 'BCE'
-num_of_epochs: 100
-validation_epochs: 5
-train_minibatch_size: 128
+num_of_epochs: 1000
+validation_epochs: 25
+train_minibatch_size: 100
 train_SNR_start: 5
 train_SNR_end: 8
 train_num_SNR: 4

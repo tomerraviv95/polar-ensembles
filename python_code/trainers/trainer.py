@@ -55,7 +55,8 @@ class Trainer(object):
                                                            crc_gm=self.model.crc_gm,
                                                            system_enc=False,
                                                            crc_len=len(CONFIG.crc),
-                                                           code_gm=self.model.code_gm)
+                                                           code_gm=self.model.code_gm,
+                                                           decoder_name=self.decoder_name)
                                 for phase in ['train', 'val']}
         self.dataloaders = {phase: torch.utils.data.DataLoader(self.channel_dataset[phase]) for phase in
                             ['train', 'val']}
@@ -63,6 +64,10 @@ class Trainer(object):
     # empty method for loading the model
     def load_model(self):
         self.model = None
+        self.decoder_name = None
+
+    def decode(self, soft_values):
+        pass
 
     def setup_save_dir(self):
         self.weights_dir = os.path.join(WEIGHTS_DIR, CONFIG.run_name)
@@ -95,7 +100,8 @@ class Trainer(object):
 
                 ber_total[j] /= snr_test_size
                 fer_total[j] /= snr_test_size
-                print(f'done. time: {time.time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}')
+                print(
+                    f'done. time: {time.time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}')
             return ber_total, fer_total
 
     def single_eval(self, j):
@@ -106,7 +112,7 @@ class Trainer(object):
 
         # decode and calculate accuracy
         output_list, not_satisfied_list = self.model(rx_per_snr)
-        decoded_words = llr_to_bits(output_list[-1])
+        decoded_words = self.decode(output_list[-1])
 
         return calculate_accuracy(decoded_words, target_per_snr, DEVICE)
 
@@ -186,7 +192,6 @@ class Trainer(object):
 
                 # calculate loss
                 loss = self.calc_loss(prediction=prediction, labels=target_per_snr)
-
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()

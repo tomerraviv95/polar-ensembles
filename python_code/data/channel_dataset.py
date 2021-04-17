@@ -8,13 +8,13 @@ import torch
 
 
 class ChannelModelDataset(Dataset):
-    def __init__(self, code_len, info_len, code_type, clipping_val, use_llr=True, modulation=BPSKmodulation,
+    def __init__(self, code_len, info_len, code_type, clipping_val, decoder_name, use_llr=True,
+                 modulation=BPSKmodulation,
                  channel=AWGN, batch_size=None, snr_range=None, zero_word_only=True, random=None, wordRandom=None,
                  crc_len=0, **code_params):
         self.code_len = code_len
         self.info_len = info_len
         self.crc_len = crc_len
-        self.code_type = code_type
         self.random = random if random else np.random.RandomState()
         self.wordRandom = wordRandom if wordRandom else np.random.RandomState()
         self.use_llr = use_llr
@@ -24,18 +24,16 @@ class ChannelModelDataset(Dataset):
         self.snr_range = snr_range
         self.zero_word_only = zero_word_only
         self.clipping_val = clipping_val
+        self.decoder_name = decoder_name
 
         if code_type == 'Polar':
-            try:
-                self.encoding = lambda u: encoding.encode(target=u,
-                                                          code_gm=code_params['code_gm'].cpu().numpy(),
-                                                          crc_gm=code_params['crc_gm'].cpu().numpy(),
-                                                          code_len=self.code_len,
-                                                          info_ind=code_params['info_ind'].cpu().numpy(),
-                                                          crc_ind=code_params['crc_ind'].cpu().numpy(),
-                                                          system_enc=code_params['system_enc'])
-            except:
-                raise Exception('Polar code must have information bit set and flag for systematic encoding')
+            self.encoding = lambda u: encoding.encode(target=u,
+                                                      code_gm=code_params['code_gm'].cpu().numpy(),
+                                                      crc_gm=code_params['crc_gm'].cpu().numpy(),
+                                                      code_len=self.code_len,
+                                                      info_ind=code_params['info_ind'].cpu().numpy(),
+                                                      crc_ind=code_params['crc_ind'].cpu().numpy(),
+                                                      system_enc=code_params['system_enc'])
 
         else:
             raise Exception(f'code type {code_type} not implemented')
@@ -87,8 +85,14 @@ class ChannelModelDataset(Dataset):
 
         # convert to tensor
         received = torch.tensor(received).float().view(-1, self.code_len)
+        sent = torch.tensor(sent).float().view(-1, self.code_len)
         target = torch.tensor(target).float().view(-1, self.info_len)
-        return received, target
+        if self.decoder_name == 'FG':
+            return received, target
+        elif self.decoder_name == 'Tanner':
+            return received, sent
+        else:
+            raise ValueError("No such decoder!")
 
     def __len__(self):
         return self.batch_size * len(self.snr_range)

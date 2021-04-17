@@ -28,7 +28,7 @@ def crc_criterion(u, info_ind, crc_ind, poly, crc_gm, not_satisfied):
 
 def hard_decision_condition(satisfied, llr_words):
     words = llr_to_bits(llr_words).double()
-    equal_flag = ~torch.eq(torch.sum(words, dim=1), torch.DoubleTensor(1).fill_(0))
+    equal_flag = ~torch.eq(torch.sum(words, dim=1), torch.DoubleTensor(1).fill_(0).to(device=DEVICE))
     new_indices = satisfied[equal_flag]
     return new_indices
 
