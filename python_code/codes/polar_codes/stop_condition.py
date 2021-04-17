@@ -1,4 +1,4 @@
-from python_code.crc_codes.crc import encode_by_generator_matrix
+from python_code.codes.crc_codes.crc import encode_by_generator_matrix
 from python_code.utils.python_utils import llr_to_bits
 from globals import DEVICE
 import torch

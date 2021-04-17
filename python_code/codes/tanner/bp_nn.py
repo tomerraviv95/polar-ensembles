@@ -1,4 +1,4 @@
-from python_code.tanner.bp_nn_weights import init_w_output, initialize_w_v2c, init_w_skipconn2even, initialize_w_c2v, \
+from python_code.codes.tanner.bp_nn_weights import init_w_output, initialize_w_v2c, init_w_skipconn2even, initialize_w_c2v, \
     initialize_w_init
 from torch.nn.parameter import Parameter
 import torch

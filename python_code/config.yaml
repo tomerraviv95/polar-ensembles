@@ -1,21 +1,25 @@
 # decoder params
 code_type: Polar
-code_len: 64
-info_len: 32
+code_len: 1024
+info_len: 512
 clipping_val: 20
-iteration_num: 5
-design_SNR: 0.6
-crc: [] # [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1] #CRC-16
+iteration_num: 100
 early_stopping: True
+design_SNR: 0.6
+crc: [1,0,1,1,0,0,1,0,1,0,1,1,0,0,0,1,0,0,0,1,0,1,1,1]
+# Downlink broadcast channel: x 24 + x 23 + x 21 + x 20 + x 17 + x 15+ +x 13 + x 12 + x 8 + x 4 + x 2 + x + 1
+# [1,0,1,1,0,0,1,0,1,0,1,1,0,0,0,1,0,0,0,1,0,1,1,1]
+# Uplink control channel: x 11 + x 10 + x 9 + x 5 + 1
+# [1,1,0,0,0,1,0,0,0,0,1]
 
 # data params
-val_batch_size: 100  # number of samples per snr -> total = minibatch * #snrs
-val_SNR_start: 6
-val_SNR_end: 6
+val_batch_size: 1000
+val_SNR_start: 2.5
+val_SNR_end: 2.5
 val_num_SNR: 1
 noise_seed: 345000
 word_seed: 786000
-test_errors: 100
+test_errors: 50
 
 # nn training
 run_name: 'test'

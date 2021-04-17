@@ -1,5 +1,5 @@
 from globals import DEVICE
-from python_code.polar_codes.initialization import initialize_connections
+from python_code.codes.polar_codes import initialize_connections
 import torch
 import torch.nn as nn
 import numpy as np

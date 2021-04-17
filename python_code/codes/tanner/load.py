@@ -1,4 +1,4 @@
-from python_code.polar_codes.initialization import initialize_factor_graph, initialize_polar_code
+from python_code.codes.polar_codes import initialize_factor_graph, initialize_polar_code
 import torch
 
 

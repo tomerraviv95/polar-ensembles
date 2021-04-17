@@ -17,11 +17,10 @@ class PolarFGTrainer(Trainer):
     def load_model(self):
         self.model = FGDecoder(code_len=CONFIG.code_len,
                                info_len=CONFIG.info_len,
-                               design_SNR=CONFIG.design_SNR,
+                               design_snr=CONFIG.design_SNR,
                                crc=CONFIG.crc,
                                iteration_num=CONFIG.iteration_num,
                                clipping_val=CONFIG.clipping_val,
-                               early_termination=EARLY_TERMINATION,
                                device=DEVICE)
         self.decoder_name = 'FG'
 

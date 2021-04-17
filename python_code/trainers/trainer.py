@@ -11,9 +11,9 @@ import torch
 import time
 import os
 
-from python_code.utils.python_utils import llr_to_bits
-
 EARLY_STOPPING_PATIENCE = 5
+SYSTEMATIC_ENCODING = False
+USE_LLR = True
 
 
 class Trainer(object):
@@ -41,7 +41,7 @@ class Trainer(object):
         self.channel_dataset = {phase: ChannelModelDataset(code_len=CONFIG.code_len,
                                                            info_len=CONFIG.info_len,
                                                            code_type=CONFIG.code_type,
-                                                           use_llr=True,
+                                                           use_llr=USE_LLR,
                                                            modulation=BPSKmodulation,
                                                            channel=AWGN,
                                                            batch_size=batch_size[phase],
@@ -53,7 +53,7 @@ class Trainer(object):
                                                            info_ind=self.model.info_ind,
                                                            crc_ind=self.model.crc_ind,
                                                            crc_gm=self.model.crc_gm,
-                                                           system_enc=False,
+                                                           system_enc=SYSTEMATIC_ENCODING,
                                                            crc_len=len(CONFIG.crc),
                                                            code_gm=self.model.code_gm,
                                                            decoder_name=self.decoder_name)

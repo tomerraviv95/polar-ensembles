@@ -1,8 +1,6 @@
-from python_code.polar_codes.initialization import initialize_factor_graph, initialize_polar_code
-from python_code.crc_codes.crc import create_crc_matrices
-from python_code.tanner.load import load_code_parameters
-from python_code.polar_codes.stop_condition import *
-from python_code.tanner.bp_nn import *
+from python_code.codes.polar_codes import hard_decision_condition, syndrome_condition
+from python_code.decoders.decoder import Decoder
+from python_code.codes.tanner.bp_nn import *
 import numpy as np
 import torch
 
@@ -15,21 +13,12 @@ EARLY_TERMINATION_EVAL = True
 NN_MODEL = 'RNN'
 
 
-class TannerDecoder(torch.nn.Module):
-    def __init__(self, code_len, info_len, design_SNR, crc, iteration_num, clipping_val, device):
-        super(TannerDecoder, self).__init__()
-
-        self.code_gm = initialize_factor_graph(code_len, device=device)
-        self.info_ind, self.crc_ind = initialize_polar_code(code_len, info_len, design_SNR, crc, device)
-        self.code_pcm = self.code_gm[:, ~self.info_ind].T
-        self.code_pcm = self.code_pcm.cpu().numpy().astype(np.float32)
-        self.crc_pcm, self.crc_gm = create_crc_matrices(info_len, crc, eye='before', device=device)
-        self.clipping_val = clipping_val
-        self.device = device
+class TannerDecoder(Decoder):
+    def __init__(self, code_len, info_len, design_snr, clipping_val, crc, iteration_num, device):
+        super().__init__(code_len, info_len, design_snr, clipping_val, iteration_num, crc, device)
 
         # Neural Network config
-        self.input_output_layer_size = code_len
-        self.iteration_num = iteration_num
+        self.input_output_layer_size = len(self.total_info_bits)
         self.neurons = int(np.sum(self.code_pcm))
 
         # define layers

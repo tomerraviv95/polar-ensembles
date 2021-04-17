@@ -1,5 +1,5 @@
 from python_code.data.channel_model import BPSKmodulation, AWGN
-from python_code.polar_codes import encoding
+from python_code.codes.polar_codes import encoding
 from torch.utils.data import Dataset
 import concurrent.futures
 import collections
