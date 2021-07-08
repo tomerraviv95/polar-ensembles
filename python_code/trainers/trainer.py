@@ -51,10 +51,7 @@ class Trainer(object):
                                                            wordRandom=word_rand_gen,
                                                            clipping_val=CONFIG.clipping_val,
                                                            info_ind=self.model.info_ind,
-                                                           crc_ind=self.model.crc_ind,
-                                                           crc_gm=self.model.crc_gm,
                                                            system_enc=SYSTEMATIC_ENCODING,
-                                                           crc_len=len(CONFIG.crc),
                                                            code_gm=self.model.code_gm,
                                                            decoder_name=self.decoder_name)
                                 for phase in ['train', 'val']}

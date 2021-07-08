@@ -25,15 +25,13 @@ def calculate_z_parameters_one_recursion(z_params):
     return z_next
 
 
-def initialize_polar_code(code_len: int, info_len: int, design_SNR: float, crc: list, device: torch.device):
+def initialize_polar_code(code_len: int, info_len: int, design_SNR: float, device: torch.device):
     """
     Output:
     info-bit indices [info_len]
     subset of {0, 1, . . . , code_len - 1}
     with |A==1| = info_len logical [1 X N]
-    Same for the CRC indices
     """
-    crc_len = len(crc)
     n = np.ceil(np.log2(code_len)).astype(int)
     z0 = np.array(np.exp(-10 ** (design_SNR / 10)))
     for j in range(n):
@@ -42,22 +40,11 @@ def initialize_polar_code(code_len: int, info_len: int, design_SNR: float, crc: 
     # Find greatest (N-K) elements to  frozen bits
     sort_idx = np.argsort(-z0)
     sort_idx = sort_idx[sort_idx < code_len]
-    unfrozen_index = sort_idx[code_len - info_len - crc_len:]
+    info_index = sort_idx[code_len - info_len:]
+    info_mat = np.full(code_len, False, dtype=bool)
+    info_mat[info_index] = True
 
-    if crc_len == 0:
-        info_index = sort_idx[code_len - info_len:]
-        info_mat = np.full(code_len, False, dtype=bool)
-        info_mat[info_index] = True
-        crc_mat = []
-    else:
-        # first bits are all info, CRC after. disregard actual values of sort_idx with the noises strength
-        info_index = np.sort(unfrozen_index[:info_len])
-        crc_index = np.sort(unfrozen_index[-crc_len:])
-        info_mat = np.full(code_len, False, dtype=bool)
-        info_mat[info_index] = True
-        crc_mat = np.full(code_len, False, dtype=bool)
-        crc_mat[crc_index] = True
-    return torch.tensor(info_mat, device=device), torch.tensor(crc_mat, device=device)
+    return torch.tensor(info_mat, device=device)
 
 
 def initialize_connections(code_len: int) -> np.array:

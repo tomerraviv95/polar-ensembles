@@ -76,25 +76,8 @@ class Plotter:
 
 if __name__ == '__main__':
     plotter = Plotter(run_over=True, type='FER')
-
-    # plotter.plot(*get_polar_64_32())
-
-    # plotter.plot(*get_weighted_polar_64_32())
-
-    plotter.plot(*get_polar_128_64())
-
-    plotter.plot(*get_weighted_polar_128_64())
-
-    # plotter.plot(*get_polar_256_128())
-
-    # plotter.plot(*get_weighted_polar_256_128())
-
-    # plotter.plot(*get_polar_1024_512())
-
-    # plotter.plot(*get_weighted_polar_1024_512())
-
-    # gross_curve = [4e-2, 2e-2, 6.5e-3, 3e-3, 1e-3, 3e-4, 9e-5]
-    # plotter.plot_curve(gross_curve, {'label': 'Gross BP-5', 'color': 'blue', 'marker': 'o'})
+    plotter.plot(*get_polar_256_128())
+    plotter.plot(*get_weighted_polar_256_128())
 
     # path for the saved figure
     current_day_time = datetime.datetime.now()

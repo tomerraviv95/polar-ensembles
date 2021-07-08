@@ -1,29 +1,15 @@
 import numpy as np
 
 
-def encode(target, code_gm, crc_gm, code_len, info_ind, crc_ind, system_enc: bool = False):
+def encode(target, code_gm, code_len, info_ind):
     """
     Input: u - Information matrix with Batch x info (each row is information bits), G - Generator matrix with info x N
     Output: x - Encoded matrix Batch x code_len
     """
-    len_crc = sum(crc_ind)
     batch_size, _ = target.shape
     u = np.zeros((batch_size, code_len))
-    if len_crc:
-        target_crc = (np.matmul(target, crc_gm.T) % 2)
-        u[:, info_ind] = target_crc[:, len_crc:]
-        u[:, crc_ind] = target_crc[:, :len_crc]
-    else:
-        u[:, info_ind] = target
-
+    u[:, info_ind] = target
     x = transform_by_mat(u, code_gm)
-    if system_enc:  # TODO: check
-        raise NotImplementedError
-        # print("systematic")
-        # info_bits = np.logical_or(info_ind, crc_ind)
-        # x[:, ~info_bits] = 0
-        # x = transform_by_recursion(x)
-
     return x
 
 

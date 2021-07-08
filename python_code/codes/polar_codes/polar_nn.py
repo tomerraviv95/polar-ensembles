@@ -1,8 +1,9 @@
 from globals import DEVICE
-from python_code.codes.polar_codes import initialize_connections
 import torch
 import torch.nn as nn
 import numpy as np
+
+from python_code.codes.polar_codes.initialization import initialize_connections
 
 
 def min_sum(x, y):

@@ -18,7 +18,6 @@ class PolarFGTrainer(Trainer):
         self.model = FGDecoder(code_len=CONFIG.code_len,
                                info_len=CONFIG.info_len,
                                design_snr=CONFIG.design_SNR,
-                               crc=CONFIG.crc,
                                iteration_num=CONFIG.iteration_num,
                                clipping_val=CONFIG.clipping_val,
                                device=DEVICE)
@@ -36,4 +35,4 @@ class PolarFGTrainer(Trainer):
 if __name__ == "__main__":
     # load config and run evaluation of decoder
     dec = PolarFGTrainer()
-    ber, fer = dec.evaluate()
+    ber, fer = dec.train()

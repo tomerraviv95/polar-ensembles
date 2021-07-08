@@ -1,5 +1,5 @@
-from python_code.codes.polar_codes import crc_criterion, generator_criterion
-from python_code.codes.polar_codes import IterateLeftLayer, IterateRightLayer
+from python_code.codes.polar_codes.polar_nn import IterateRightLayer, IterateLeftLayer
+from python_code.codes.polar_codes.stop_condition import generator_criterion
 from python_code.utils.python_utils import llr_to_bits
 from python_code.decoders.decoder import Decoder
 import numpy as np
@@ -14,8 +14,8 @@ class FGDecoder(Decoder):
     See that after every decoding iteration (L->R>L) we usually stop decoding if some stopping criterion holds.
     """
 
-    def __init__(self, code_len, info_len, design_snr, clipping_val, crc, iteration_num, device):
-        super().__init__(code_len, info_len, design_snr, clipping_val, iteration_num, crc, device)
+    def __init__(self, code_len, info_len, design_snr, clipping_val, iteration_num, device):
+        super().__init__(code_len, info_len, design_snr, clipping_val, iteration_num, device)
 
         self.num_stages = int(np.log2(code_len))
         self._build_model()
@@ -69,12 +69,8 @@ class FGDecoder(Decoder):
             not_satisfied_list[i] = not_satisfied.clone()
             u_list[-1][not_satisfied] = u_list[i].clone()
             if EARLY_TERMINATION_EVAL:
-                if len(self.poly):
-                    not_satisfied = crc_criterion(llr_to_bits(u), self.info_ind, self.crc_ind, self.poly,
-                                                  self.crc_gm, not_satisfied)
-                else:
-                    not_satisfied = generator_criterion(llr_to_bits(x), llr_to_bits(u), self.code_gm,
-                                                        not_satisfied)
+                not_satisfied = generator_criterion(llr_to_bits(x), llr_to_bits(u), self.code_gm,
+                                                    not_satisfied)
             if not_satisfied.size(0) == 0:
                 break
         return u_list, not_satisfied_list
