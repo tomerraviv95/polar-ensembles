@@ -1,6 +1,4 @@
-from python_code.plotter.plotter_types import get_polar_64_32, get_weighted_polar_64_32, get_polar_128_64, \
-    get_weighted_polar_128_64, get_polar_1024_512, get_weighted_polar_1024_512, get_polar_256_128, \
-    get_weighted_polar_256_128
+from python_code.plotter.plotter_types import *
 from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.utils.python_utils import load_pkl, save_pkl
 from python_code.trainers.trainer import Trainer
@@ -46,15 +44,16 @@ class Plotter:
         return graph
 
     def plot(self, graph_params, config_params):
-        val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
-        # set all parameters based on dict
         if config_params["load_weights"]:
             plot_config_path = os.path.join(WEIGHTS_DIR,config_params["run_name"]+"\\config.yaml")
             CONFIG.load_config(plot_config_path)
-            for k, v in config_plot_params.items():
-                CONFIG.set_value(k, v)
+        # set all parameters based on dict
         for k, v in config_params.items():
             CONFIG.set_value(k, v)
+        for k, v in config_plot_params.items():
+            CONFIG.set_value(k, v)
+        val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
+
         dec = PolarFGTrainer()
         fer = self.get_fer_plot(dec, graph_params['label'])
         plt.plot(val_SNRs, fer,
@@ -92,8 +91,13 @@ if __name__ == '__main__':
     # plotter.plot(*get_polar_64_32())
     # plotter.plot(*get_weighted_polar_64_32())
 
-    plotter.plot(*get_polar_256_128())
-    plotter.plot(*get_weighted_polar_256_128())
+    # plotter.plot(*get_polar_256_128())
+    # plotter.plot(*get_weighted_polar_256_128())
+
+    # plotter.plot(*get_polar_256_128())
+    # plotter.plot(*get_weighted_polar_256_128_iter6())
+    # plotter.plot(*get_weighted_polar_256_128_iter7())
+    # plotter.plot(*get_weighted_polar_256_128_iter8())
 
     # plotter.plot(*get_polar_1024_512())
     # plotter.plot(*get_weighted_polar_1024_512())
