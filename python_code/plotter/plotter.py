@@ -5,7 +5,7 @@ from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.utils.python_utils import load_pkl, save_pkl
 from python_code.trainers.trainer import Trainer
 from python_code.plotter.plotter_config import *
-from dir_definitions import PLOTS_DIR, FIGURES_DIR
+from dir_definitions import PLOTS_DIR, FIGURES_DIR, WEIGHTS_DIR
 import matplotlib.pyplot as plt
 from globals import CONFIG
 import numpy as np
@@ -43,6 +43,9 @@ class Plotter:
     def plot(self, graph_params, config_params):
         val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
         # set all parameters based on dict
+        if config_params["load_weights"]:
+            plot_config_path = os.path.join(WEIGHTS_DIR,config_params["run_name"]+"\\config.yaml")
+            CONFIG.load_config(plot_config_path)
         for k, v in config_params.items():
             CONFIG.set_value(k, v)
         dec = PolarFGTrainer()
@@ -58,6 +61,8 @@ class Plotter:
         plt.grid(True, which='both')
         plt.legend(loc='lower left', prop={'size': 15})
         plt.xlim((val_SNRs[0] - 0.5, val_SNRs[-1] + 0.5))
+
+
 
     def plot_curve(self, fer, graph_params):
         val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
@@ -76,8 +81,15 @@ class Plotter:
 
 if __name__ == '__main__':
     plotter = Plotter(run_over=True, type='FER')
+
+    # plotter.plot(*get_polar_64_32())
+    # plotter.plot(*get_weighted_polar_64_32())
+
     plotter.plot(*get_polar_256_128())
     plotter.plot(*get_weighted_polar_256_128())
+
+    # plotter.plot(*get_polar_1024_512())
+    # plotter.plot(*get_weighted_polar_1024_512())
 
     # path for the saved figure
     current_day_time = datetime.datetime.now()
