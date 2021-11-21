@@ -12,6 +12,11 @@ import numpy as np
 import datetime
 import os
 
+config_plot_params = {'val_SNR_start' : 1,
+                      'val_SNR_end' : 4,
+                      'val_num_SNR' : 7,
+                      'test_errors' : 500
+                }
 
 class Plotter:
     def __init__(self, run_over, type):
@@ -46,6 +51,8 @@ class Plotter:
         if config_params["load_weights"]:
             plot_config_path = os.path.join(WEIGHTS_DIR,config_params["run_name"]+"\\config.yaml")
             CONFIG.load_config(plot_config_path)
+            for k, v in config_plot_params.items():
+                CONFIG.set_value(k, v)
         for k, v in config_params.items():
             CONFIG.set_value(k, v)
         dec = PolarFGTrainer()
