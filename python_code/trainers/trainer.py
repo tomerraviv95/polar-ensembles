@@ -53,7 +53,8 @@ class Trainer(object):
                                                            info_ind=self.model.info_ind,
                                                            system_enc=SYSTEMATIC_ENCODING,
                                                            code_gm=self.model.code_gm,
-                                                           decoder_name=self.decoder_name)
+                                                           decoder_name=self.decoder_name,
+                                                           crc_order=CONFIG.crc_order)
                                 for phase in ['train', 'val']}
         self.dataloaders = {phase: torch.utils.data.DataLoader(self.channel_dataset[phase]) for phase in
                             ['train', 'val']}

@@ -27,17 +27,17 @@ def mod2div(divident, divisor):
     batch_size = np.shape(divident)[0]
 
     divident_int = divident.astype(int)
-    divisor_len = len(key)
+    divisor_int = divisor.astype(int)
+    divisor_len = len(divisor_int)
     divident_len = np.shape(divident)[1]
     # Number of bits to be XORed at a time.
     pick = divisor_len
-    xor_mat = np.full((batch_size,divisor_len),divisor)
+    xor_mat = np.full((batch_size,divisor_len),divisor_int)
     # Slicing the divident to appropriate
     # length for particular step
     tmp = np.copy(divident_int[:,0 : pick])
 
     while pick < divident_len:
-        print(tmp)
         extended_tmp = np.full((batch_size,divisor_len),np.reshape(tmp[:,0],(batch_size,1)))
         word_wise_divisor = extended_tmp*xor_mat
         tmp[:,:-1] = np.bitwise_xor(word_wise_divisor[:,1:], tmp[:,1:])
@@ -54,12 +54,13 @@ def mod2div(divident, divisor):
     reminder = reminder_int.astype(float)
     return reminder
 
-def crc_encode(data,key):
+def crc_encode(data,order):
     '''
     Input: data - data to encode, np array (size = batch_size X word length)
-           key - key to encode by, np array (size = 1 X crc_key)
+           order - the polynomial order for key generation (int)
     Output: codeword - encoded data, np array (size = batch_size X word length)
     '''
+    key = get_crc_key(order)
     l_key = key.size
     batch_size = np.shape(data)[0]
     # Appends n-1 zeroes at end of data
@@ -68,16 +69,16 @@ def crc_encode(data,key):
 
     # Append remainder in the original data
     codeword = np.concatenate((data,remainder[:,1:]),axis=1) # first bit always 0
-    print("Remainder : ", remainder)
-    print("Encoded Data (Data + Remainder) : ",
-          codeword)
+    # print("Remainder : ", remainder)
+    # print("Encoded Data (Data + Remainder) : ",codeword)
     return codeword
 
-def crc_check(data,key):
+def crc_check(data,order):
     '''
     Input: data - data to decode, np array (size = batch_size X word length)
-           key - key to encode by, np array (size = 1 X crc_key)
+           order - the polynomial order for key generation (int)
     Output: crc_value - np array (size = batch_size X word length)
     '''
+    key = get_crc_key(order)
     crc_value = mod2div(data,key)
     return crc_value[:,1:]
