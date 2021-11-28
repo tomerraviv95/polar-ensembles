@@ -15,16 +15,17 @@ val_num_SNR: 1
 noise_seed: 345000
 word_seed: 786000
 test_errors: 500
+crc_order: 11
 
 # nn training
-run_name: 'test'
+run_name: 'wfg_256_128_crc11_iter8'
 load_weights: False
-lr: 0.001
+lr: 0.01
 optimizer_type: 'ADAM'
 criterion_type: 'BCE'
 num_of_epochs: 100
 validation_epochs: 5
 train_minibatch_size: 100
-train_SNR_start: 6
-train_SNR_end: 8
+train_SNR_start: 1.25
+train_SNR_end: 4.25
 train_num_SNR: 3
