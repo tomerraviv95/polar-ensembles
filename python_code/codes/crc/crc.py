@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 def get_crc_key(order=11):
     '''
@@ -25,7 +26,8 @@ def mod2div(divident, divisor):
     Output: reminder - reminder of divident/divisor of size divisor
     '''
     batch_size = np.shape(divident)[0]
-
+    if isinstance(divident, torch.Tensor):
+        divident = divident.detach().numpy()
     divident_int = divident.astype(int)
     divisor_int = divisor.astype(int)
     divisor_len = len(divisor_int)

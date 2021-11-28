@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import time
 import os
+from python_code.codes.crc import crc
 
 EARLY_STOPPING_PATIENCE = 5
 SYSTEMATIC_ENCODING = False
@@ -113,6 +114,38 @@ class Trainer(object):
         decoded_words = self.decode(output_list[-1])
 
         return calculate_accuracy(decoded_words, target_per_snr, DEVICE)
+
+    def evaluate_crc(self):
+        '''
+        Evaluate the crc value for every snr
+        '''
+        snr_range = self.snr_range['val']
+        pred_crc_distribution = np.zeros((len(snr_range), 2**CONFIG.crc_order))
+        actual_crc_distribution = np.zeros((len(snr_range), 2**CONFIG.crc_order))
+        crc2int = lambda crc : int("".join(str(int(x)) for x in crc),2)
+        for j, snr in enumerate(snr_range):
+            rx_per_snr_tot, target_per_snr_tot = iter(self.channel_dataset['val'][j])
+            for i in range(10): # divide to batch
+                ptr = int(CONFIG.val_batch_size/10)
+                rx_per_snr = rx_per_snr_tot[i*ptr:(i+1)*ptr]
+                target_per_snr = target_per_snr_tot[i*ptr:(i+1)*ptr]
+                rx_per_snr = rx_per_snr.to(device=DEVICE)
+                target_per_snr = target_per_snr.to(device=DEVICE)
+                output_list, not_satisfied_list = self.model(rx_per_snr)
+                decoded_words = self.decode(output_list[-1])
+                actual_crc = crc.crc_check(target_per_snr, CONFIG.crc_order)
+                pred_crc = crc.crc_check(decoded_words, CONFIG.crc_order)
+                for w in range(np.shape(actual_crc)[0]):
+                    actual_val = crc2int(actual_crc[w])
+                    pred_val = crc2int(pred_crc[w])
+                    actual_crc_distribution[j,actual_val] += 1
+                    pred_crc_distribution[j,pred_val] += 1
+
+                print(f'done {int(100*(i+10*j)/(10*len(snr_range)))}%')
+
+        return actual_crc_distribution, pred_crc_distribution
+
+
 
     def optimization_setup(self):
         if CONFIG.optimizer_type == 'SGD':
