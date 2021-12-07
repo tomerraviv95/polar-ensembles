@@ -94,6 +94,8 @@ class ChannelModelDataset(Dataset):
         target = torch.tensor(target).float().view(-1, self.info_len)
         if self.decoder_name == 'FG':
             return received, target
+        elif self.decoder_name == 'Ensemble':
+            return received, target
         elif self.decoder_name == 'Tanner':
             return received, sent
         else:

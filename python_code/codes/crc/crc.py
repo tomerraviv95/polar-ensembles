@@ -84,3 +84,10 @@ def crc_check(data,order):
     key = get_crc_key(order)
     crc_value = mod2div(data,key)
     return crc_value[:,1:]
+
+def crc2int(crc : np.array):
+    batch_size = np.shape(crc)[0]
+    crc_val = np.zeros((batch_size,1))
+    for row in range(batch_size):
+        crc_val[row] = int("".join(str(int(x)) for x in crc[row]),2)
+    return crc_val

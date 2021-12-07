@@ -1,5 +1,6 @@
 from python_code.plotter.plotter_types import *
 from python_code.trainers.fg_trainer import PolarFGTrainer
+from python_code.trainers.ensemble_trainer import EnsembleTrainer
 from python_code.utils.python_utils import load_pkl, save_pkl
 from python_code.trainers.trainer import Trainer
 from python_code.plotter.plotter_config import *
@@ -44,7 +45,7 @@ class Plotter:
         return graph
 
 
-    def plot(self, graph_params, config_params):
+    def plot(self, graph_params, config_params, dec_type='FG'):
         if config_params["load_weights"]:
             plot_config_path = os.path.join(WEIGHTS_DIR,config_params["run_name"]+"\\config.yaml")
             CONFIG.load_config(plot_config_path)
@@ -55,7 +56,10 @@ class Plotter:
             CONFIG.set_value(k, v)
         val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
 
-        dec = PolarFGTrainer()
+        if dec_type == 'Ensemble':
+            dec = EnsembleTrainer()
+        else:
+            dec = PolarFGTrainer()
         fer = self.get_fer_plot(dec, graph_params['label'])
         plt.plot(val_SNRs, fer,
                  label=graph_params['label'],
@@ -147,18 +151,26 @@ if __name__ == '__main__':
     # plotter.plot(*get_polar_256_128())
     # plotter.plot(*get_weighted_polar_256_128())
 
-    # plotter.plot(*get_polar_256_128())
-    # plotter.plot(*get_weighted_polar_256_128_iter6())
-    # plotter.plot(*get_weighted_polar_256_128_iter7())
+    # plotter = Plotter(run_over=True, type='FER')
+    # plotter.plot(*get_ensemble_64_32_crc11_iter6(),dec_type='Ensemble')
+    # plotter.plot(*get_polar_64_32())
+    # plotter.plot(*get_weighted_polar_64_32_crc11_iter6())
+
+    plotter = Plotter(run_over=True, type='FER')
+    plotter.plot(*get_ensemble_256_128_crc11_iter6(),dec_type='Ensemble')
+    plotter.plot(*get_weighted_polar_256_128_crc11_iter6())
+    plotter.plot(*get_polar_256_128())
+
+# plotter.plot(*get_weighted_polar_256_128_iter7())
     # plotter.plot(*get_weighted_polar_256_128_iter8())
 
     # plotter.plot(*get_polar_1024_512())
     # plotter.plot(*get_weighted_polar_1024_512())
 
-    plotter = Plotter(run_over=True, type='pred_crc')
-    graph_params, config_params = get_polar_64_32()
-    graph_params["bins"] = 2**5
-    plotter.plot_crc(graph_params, config_params)
+    # plotter = Plotter(run_over=True, type='pred_crc')
+    # graph_params, config_params = get_polar_64_32()
+    # graph_params["bins"] = 2**5
+    # plotter.plot_crc(graph_params, config_params)
 
 
     # path for the saved figure
