@@ -10,16 +10,16 @@ import os
 
 
 def get_polar_64_32():
-    graph_params = {'label': 'FG (64,32)', 'color': 'red', 'marker': 'o'}
+    graph_params = {'color': 'red', 'marker': 'o'}
     runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'num_of_epochs':5, 'iteration_num':5, 'crc_order': 0}
     script_params = {"decoder_type":"FG"}
     return graph_params, runs_params, script_params
 
 
 def get_weighted_polar_64_32_crc11_iter6():
-    graph_params = {'label': 'WFG (64,32) 6 iters crc order 11', 'color': 'red', 'marker': 'x'}
+    graph_params = {'color': 'red', 'marker': 'x'}
     runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'num_of_epochs':5, 'iteration_num':5, 'crc_order': 11}
-    script_params = {"decoder_type":"FG"}
+    script_params = {"decoder_type":"WFG"}
     return graph_params, runs_params, script_params
 
 
@@ -39,6 +39,10 @@ def TrainDecs(decs_to_train):
             runs_params['run_name'] = run_name
             print(f"no run name given, setting one auto : {run_name}")
 
+        if 'label' not in graph_params:
+            label = f"{script_params['decoder_type']} ({runs_params['code_len']},{runs_params['info_len']}) iters {runs_params['iteration_num']}"
+            graph_params['label'] = label
+
         params = {'graph_params':graph_params, 'runs_params':runs_params, 'script_params':script_params}
         trained.append(params)
 
@@ -51,18 +55,27 @@ def TrainDecs(decs_to_train):
 
     return trained
 
-def PlotDecs(decs_to_plot, decs_to_calc_and_plot, plot_type="FER"):
+def PlotDecs(decs_to_plot, decs_to_calc_and_plot, dec_trained_params, plot_type="FER"):
     ''' Plot the decoders: decs_to_plot will only load its plots'''
 
     # these only needs to be plotted
     plotter = Plotter(run_over=False, type=plot_type)
     for dec in decs_to_plot:
         graph_params, runs_params, script_params = dec()
+        if 'label' not in graph_params:
+            label = f"{script_params['decoder_type']} ({runs_params['code_len']},{runs_params['info_len']})"
+        plotter.plot(graph_params, runs_params, dec_type=script_params['decoder_type'])
+
+    plotter = Plotter(run_over=True, type=plot_type)
+    for dec in decs_to_calc_and_plot:
+        graph_params, runs_params, script_params = dec()
+        if 'label' not in graph_params:
+            label = f"{script_params['decoder_type']} ({runs_params['code_len']},{runs_params['info_len']}) iters {runs_params['iteration_num']}"
+            graph_params['label'] = label
         plotter.plot(graph_params, runs_params, dec_type=script_params['decoder_type'])
 
     # these needs to be evaluated at SNR's after training
-    plotter = Plotter(run_over=True, type=plot_type)
-    for dec in decs_to_calc_and_plot:
+    for dec in dec_trained_params:
         graph_params = dec['graph_params']
         runs_params = dec['runs_params']
         script_params = dec['script_params']
@@ -82,9 +95,10 @@ decoder_type = {"Ensemble":EnsembleTrainer, "FG":PolarFGTrainer}
 
 if __name__ == '__main__':
     decs_to_train = [get_polar_64_32, get_weighted_polar_64_32_crc11_iter6] # decoder to train
-    decs_to_plot_with_decs_to_train = [] # decoders only to plot
+    decs_to_plot = [] # decoders only plot
+    decs_to_load_plot = [] # decoders only to load exsiting plot
 
     dec_trained_params = TrainDecs(decs_to_train)
 
-    PlotDecs(decs_to_plot_with_decs_to_train, dec_trained_params)
+    PlotDecs(decs_to_load_plot, decs_to_plot, dec_trained_params, plot_type="FER")
 
