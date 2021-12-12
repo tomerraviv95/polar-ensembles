@@ -4,6 +4,7 @@ from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.decoders.ensemble_decoder import EnsembleDecoder
 from python_code.trainers.trainer import Trainer
 from globals import CONFIG, DEVICE
+from time import time
 
 EARLY_TERMINATION = True
 
@@ -50,4 +51,10 @@ class EnsembleTrainer(Trainer):
 if __name__ == "__main__":
     # load config and run evaluation of decoder
     dec = EnsembleTrainer()
+
+    start = time()
+
     ber, fer = dec.train()
+
+    end = time()
+    print(f'################## total training time: {end-start} ##################')

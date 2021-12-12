@@ -6,43 +6,44 @@ import matplotlib.pyplot as plt
 from globals import CONFIG
 import datetime
 import os
+from time import time
 
 
 
 def get_polar_64_32():
     graph_params = {'color': 'red', 'marker': 'o'}
-    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'load_weights': False , 'num_of_epochs':5, 'iteration_num':3, 'crc_order': 0}
+    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'load_weights': False , 'iteration_num':9, 'crc_order': 0}
     script_params = {"decoder_type":"FG"}
     return graph_params, runs_params, script_params
 
 
 def get_weighted_polar_64_32_crc11():
     graph_params = {'color': 'green', 'marker': 'o'}
-    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'load_weights': True , 'num_of_epochs':5, 'iteration_num':3, 'crc_order': 11}
+    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'load_weights': True , 'iteration_num':9, 'crc_order': 11}
     script_params = {"decoder_type":"WFG"}
     return graph_params, runs_params, script_params
 
 def get_ensemble_polar_64_32_crc11():
     graph_params = {'color': 'blue', 'marker': 'x'}
-    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'load_weights': True , 'num_of_epochs':5, 'iteration_num':3, 'crc_order': 11}
+    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'load_weights': True , 'iteration_num':9, 'crc_order': 11}
     script_params = {"decoder_type":"Ensemble"}
     return graph_params, runs_params, script_params
 
 def get_polar_256_128():
     graph_params = {'color': 'red', 'marker': 'o'}
-    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': False , 'num_of_epochs':5, 'iteration_num':6, 'crc_order': 11}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': False , 'iteration_num':6, 'crc_order': 11}
     script_params = {"decoder_type":"FG"}
     return graph_params, runs_params, script_params
 
 def get_weighted_polar_256_128_crc11_iter6():
     graph_params = {'color': 'green', 'marker': 'o'}
-    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128,'run_name':'wfg_256_128_crc11_iter6', 'load_weights': True , 'num_of_epochs':5, 'iteration_num':6, 'crc_order': 11}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128,'run_name':'wfg_256_128_crc11_iter6', 'load_weights': True , 'iteration_num':6, 'crc_order': 11}
     script_params = {"decoder_type":"WFG"}
     return graph_params, runs_params, script_params
 
 def get_ensemble_polar_256_128_crc11_iter6():
     graph_params = {'color': 'blue', 'marker': 'x'}
-    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128,'run_name':'ensemble_256_128_crc11_iter6', 'load_weights': True , 'num_of_epochs':5, 'iteration_num':6, 'crc_order': 11}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128,'run_name':'ensemble_256_128_crc11_iter6', 'load_weights': True , 'iteration_num':6, 'crc_order': 11}
     script_params = {"decoder_type":"Ensemble"}
     return graph_params, runs_params, script_params
 
@@ -70,8 +71,11 @@ def TrainDecs(decs_to_train):
         else:
             dec = PolarFGTrainer()
 
+        start = time()
         ber, fer = dec.train()
-
+        end = time()
+        script_params['train_time'] = end - start
+        print(f"############ run named: {runs_params['run_name']} took {script_params['train_time']} sec to train ############")
         runs_params['load_weights'] = True
         params = {'graph_params':graph_params, 'runs_params':runs_params, 'script_params':script_params}
         trained.append(params)
