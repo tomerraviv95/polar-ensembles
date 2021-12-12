@@ -11,14 +11,14 @@ import os
 
 def get_polar_64_32():
     graph_params = {'color': 'red', 'marker': 'o'}
-    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'num_of_epochs':5, 'iteration_num':5, 'crc_order': 0}
+    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'load_weights': False , 'num_of_epochs':5, 'iteration_num':5, 'crc_order': 0}
     script_params = {"decoder_type":"FG"}
     return graph_params, runs_params, script_params
 
 
 def get_weighted_polar_64_32_crc11_iter6():
     graph_params = {'color': 'red', 'marker': 'x'}
-    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'num_of_epochs':5, 'iteration_num':5, 'crc_order': 11}
+    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'load_weights': True , 'num_of_epochs':5, 'iteration_num':5, 'crc_order': 11}
     script_params = {"decoder_type":"WFG"}
     return graph_params, runs_params, script_params
 
@@ -94,11 +94,11 @@ def PlotDecs(decs_to_plot, decs_to_calc_and_plot, dec_trained_params, plot_type=
 decoder_type = {"Ensemble":EnsembleTrainer, "FG":PolarFGTrainer}
 
 if __name__ == '__main__':
-    decs_to_train = [get_polar_64_32, get_weighted_polar_64_32_crc11_iter6] # decoder to train
-    decs_to_plot = [] # decoders only plot
+    decs_to_train_and_plot = [get_polar_64_32, get_weighted_polar_64_32_crc11_iter6] # decoder to train
+    decs_to_plot_only = [] # decoders only plot
     decs_to_load_plot = [] # decoders only to load exsiting plot
 
-    dec_trained_params = TrainDecs(decs_to_train)
+    dec_trained_params = TrainDecs(decs_to_train_and_plot)
 
-    PlotDecs(decs_to_load_plot, decs_to_plot, dec_trained_params, plot_type="FER")
+    PlotDecs(decs_to_load_plot, decs_to_plot_only, dec_trained_params, plot_type="FER")
 
