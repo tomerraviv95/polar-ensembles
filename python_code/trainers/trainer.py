@@ -12,7 +12,7 @@ import time
 import os
 from python_code.codes.crc import crc
 
-EARLY_STOPPING_PATIENCE = 5
+EARLY_STOPPING_PATIENCE = 10
 SYSTEMATIC_ENCODING = False
 USE_LLR = True
 
