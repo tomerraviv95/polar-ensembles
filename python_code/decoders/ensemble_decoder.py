@@ -29,6 +29,7 @@ class EnsembleDecoder(Decoder):
         decoders = [0] * (self.num_of_decoders + 1)
         for i in range(self.num_of_decoders+1):
             decoders[i] = FGDecoder(self.code_len, self.info_len, self.design_snr, self.clipping_val, self.iteration_num, self.device)
+        decoders[0].requires_grad_(requires_grad=False) # crc selector should not be trained
         self.decoders = torch.nn.ModuleList(decoders)
 
     def forward(self, rx: torch.Tensor):
