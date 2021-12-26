@@ -156,10 +156,10 @@ if __name__ == '__main__':
     # plotter.plot(*get_polar_64_32())
     # plotter.plot(*get_weighted_polar_64_32_crc11_iter6())
 
-    plotter = Plotter(run_over=True, type='FER')
-    plotter.plot(*get_ensemble_256_128_crc11_iter6(),dec_type='Ensemble')
-    plotter.plot(*get_weighted_polar_256_128_crc11_iter6())
-    plotter.plot(*get_polar_256_128())
+    # plotter = Plotter(run_over=True, type='FER')
+    # plotter.plot(*get_ensemble_256_128_crc11_iter6(),dec_type='Ensemble')
+    # plotter.plot(*get_weighted_polar_256_128_crc11_iter6())
+    # plotter.plot(*get_polar_256_128())
 
 # plotter.plot(*get_weighted_polar_256_128_iter7())
     # plotter.plot(*get_weighted_polar_256_128_iter8())
@@ -171,6 +171,14 @@ if __name__ == '__main__':
     # graph_params, config_params = get_polar_64_32()
     # graph_params["bins"] = 2**5
     # plotter.plot_crc(graph_params, config_params)
+
+    plotter = Plotter(run_over=False, type='FER')
+    plotter.plot(*get_polar_64_32(),dec_type='FG')
+    plotter.plot(*get_ensemble_64_32_crc11_iter6(),dec_type='Ensemble')
+
+
+    plotter = Plotter(run_over=True, type='FER')
+    plotter.plot(*get_weighted_polar_64_32_crc11_iter6(),dec_type='FG')
 
 
     # path for the saved figure

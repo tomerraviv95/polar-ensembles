@@ -4,9 +4,14 @@ def get_polar_64_32():
     return graph_params, runs_params
 
 
-def get_weighted_polar_64_32():
-    graph_params = {'label': 'WFG (64,32)', 'color': 'red', 'marker': 'x'}
-    runs_params = {'code_len': 64, 'info_len': 32, 'run_name': 'wfg_64_32_crc11', 'load_weights': True}
+def get_weighted_polar_64_32_crc11_iter6():
+    graph_params = {'label': 'WFG (64,32) 6 iters crc order 11', 'color': 'red', 'marker': 'x'}
+    runs_params = {'code_len': 64, 'info_len': 32, 'run_name': 'wfg_64_32_crc11_iter6', 'load_weights': True}
+    return graph_params, runs_params
+
+def get_ensemble_64_32_crc11_iter6():
+    graph_params = {'label': 'ensemble (64,32) 6 iters crc order 11', 'color': 'green', 'marker': 'x'}
+    runs_params = {'code_len': 64, 'info_len': 32, 'run_name': 'ensemble_64_32_crc11_iter6', 'load_weights': True}
     return graph_params, runs_params
 
 
@@ -33,8 +38,8 @@ def get_weighted_polar_256_128():
     runs_params = {'code_len': 256, 'info_len': 128, 'run_name': 'wfg_256_128', 'load_weights': True}
     return graph_params, runs_params
 
-def get_weighted_polar_256_128_iter6():
-    graph_params = {'label': 'WFG (256,128) 6 iters', 'color': 'red', 'marker': 'x'}
+def get_weighted_polar_256_128_crc11_iter6():
+    graph_params = {'label': 'WFG (256,128) 6 iters crc order 11', 'color': 'red', 'marker': 'x'}
     runs_params = {'code_len': 256, 'info_len': 128, 'run_name': 'wfg_256_128_crc11_iter6', 'load_weights': True}
     return graph_params, runs_params
 
@@ -44,9 +49,14 @@ def get_weighted_polar_256_128_iter7():
     runs_params = {'code_len': 256, 'info_len': 128, 'run_name': 'wfg_256_128_crc11_iter7', 'load_weights': True}
     return graph_params, runs_params
 
-def get_weighted_polar_256_128_iter8():
-    graph_params = {'label': 'WFG (256,128) 8 iters', 'color': 'green', 'marker': 'x'}
-    runs_params = {'code_len': 256, 'info_len': 128, 'run_name': 'wfg_256_128_crc11_iter8', 'load_weights': True}
+def get_ensemble_256_128_crc11_iter6():
+    graph_params = {'label': 'ensemble (256,128) 6 iters crc order 11', 'color': 'green', 'marker': 'x'}
+    runs_params = {'code_len': 256, 'info_len': 128, 'run_name': 'ensemble_256_128_crc11_iter6', 'load_weights': True}
+    return graph_params, runs_params
+
+def get_weighted_polar_1024_512():
+    graph_params = {'label': 'WFG (1024,512)', 'color': 'green', 'marker': 'x'}
+    runs_params = {'code_len': 1024, 'info_len': 512, 'run_name': 'wfg_1024_512_negative', 'load_weights': True}
     return graph_params, runs_params
 
 def get_polar_1024_512():
@@ -58,4 +68,10 @@ def get_polar_1024_512():
 def get_weighted_polar_1024_512():
     graph_params = {'label': 'WFG (1024,512)', 'color': 'green', 'marker': 'x'}
     runs_params = {'code_len': 1024, 'info_len': 512, 'run_name': 'wfg_1024_512_negative', 'load_weights': True}
+    return graph_params, runs_params
+
+
+def get_ensemble_64_32_test():
+    graph_params = {'label': 'ensemble (64,32) 6 iters crc order 11', 'color': 'green', 'marker': 'x'}
+    runs_params = {'code_len': 64, 'info_len': 32, 'run_name': 'test', 'load_weights': True}
     return graph_params, runs_params
