@@ -48,7 +48,9 @@ class DatasetCRC(ChannelModelDataset):
         self.save_dataset = save_dataset
         self.words_per_crc = words_per_crc
         self.decoder_name = decoder_name
-        self.database = [[]]*self.snr_range.size
+        self.database = []
+        for i in range(self.snr_range.size):
+            self.database.append([])
         self.load_model()
         self.crc2int = lambda crc : int("".join(str(int(x)) for x in crc),2)
 
@@ -118,6 +120,7 @@ class DatasetCRC(ChannelModelDataset):
 
                 for val in pred_crc:
                     if (np.sum(words_per_crc_counter[j]) >= 4*self.words_per_crc): # dataset is full
+                        self.database[j] = torch.Tensor(self.database[j])
                         if self.save_dataset:
                             self.save_data(j,self.snr_range[j])
                         j += 1
@@ -134,23 +137,26 @@ class DatasetCRC(ChannelModelDataset):
                     val_tens = torch.Tensor([val_int])
                     self.database[j].append(torch.cat((rx_per_snr[idx],target_per_snr[idx], val_tens),0))
                     words_per_crc_counter[j,idx] += 1
-                    print(f"snr {j}/{len(self.snr_range)} words {words}, per range {words_per_crc_counter[j]}")
+                    print(f"snr {j+1}/{len(self.snr_range)} words {words}, per range {words_per_crc_counter[j]}")
 
 
 
 
     def load_data(self):
         for j,snr in enumerate(self.snr_range):
-            self.database[j] = torch.load(os.path.join(f'{DATABASE_DIR}/dataset_code_len_{self.code_len}_crc_order_{self.crc_order}_snr_{snr}.pt'))
+            self.database[j] = torch.load(os.path.join(f'{DATABASE_DIR}\\dataset_code_len_{self.code_len}_crc_order_{self.crc_order}_snr_{snr}.pt'))
 
     def save_data(self,j,snr):
-        torch.save(self.database[j], os.path.join(f'{DATABASE_DIR}/dataset_code_len_{self.code_len}_crc_order_{self.crc_order}_snr_{snr}.pt'))
+        torch.save(self.database[j], os.path.join(f'{DATABASE_DIR}\\dataset_code_len_{self.code_len}_crc_order_{self.crc_order}_snr_{snr}.pt'))
+
 
     def __getitem__(self, item):
-        snr_data = self.data[item]
-        recieved = snr_data[:,:self.code_len]
-        target = snr_data[:,self.code_len:(self.code_len+self.info_len)]
-        crc_val = snr_data[:,-1]
+        snr_data = self.database[item]
+        recieved = snr_data[:][:self.code_len]
+        target = snr_data[:][self.code_len:(self.code_len+self.info_len)]
+        crc_val = snr_data[:][-1]
+        recieved = torch.tensor(recieved).float().view(-1, self.code_len)
+        target = torch.tensor(target).float().view(-1, self.info_len)
         return recieved, target
 
     def decode(self, soft_values):
@@ -177,7 +183,7 @@ if __name__ == "__main__":
     snr_range = train_SNRs
 
     data = DatasetCRC(load_dataset=False, save_dataset=True, words_per_crc=CONFIG.words_per_crc_range,
-                    code_len=CONFIG.code_len,
+                      code_len=CONFIG.code_len,
                       info_len=CONFIG.info_len,
                       code_type=CONFIG.code_type,
                       use_llr=True,

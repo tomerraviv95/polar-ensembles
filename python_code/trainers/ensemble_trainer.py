@@ -7,7 +7,8 @@ from python_code.decoders.ensemble_decoder import EnsembleDecoder
 from python_code.trainers.trainer import Trainer
 from python_code.data.dataset_crc import DatasetCRC
 from globals import CONFIG, DEVICE
-from time import time
+import time
+import numpy as np
 
 EARLY_TERMINATION = True
 SYSTEMATIC_ENCODING = False
@@ -18,7 +19,6 @@ class EnsembleTrainer(Trainer):
     """
     Wraps the decoder with the evaluation method
     """
-    # TODO: check if need to implement different save weights
     def __init__(self):
         super().__init__()
 
@@ -62,10 +62,14 @@ class EnsembleTrainer(Trainer):
                                  code_gm=self.model.code_gm,
                                  decoder_name=self.decoder_name,
                                  crc_order=CONFIG.crc_order)
-
+        self.database = crc_dataset.database
         self.channel_dataset = {}
-        self.channel_dataset['train'] = crc_dataset[:,:int(0.85*CONFIG.words_per_crc_range)]
-        self.channel_dataset['val'] = crc_dataset[:,int(0.85*CONFIG.words_per_crc_range):]
+        self.channel_dataset['train'] = [0]*len(train_SNRs)
+        self.channel_dataset['val'] = [0]*len(train_SNRs)
+        for j,snr in enumerate(train_SNRs):
+            dataset_size = len(crc_dataset.database[j])
+            self.channel_dataset['train'][j] = crc_dataset.database[j][:int(0.85*dataset_size)]
+            self.channel_dataset['val'][j] = crc_dataset.database[j][int(0.85*dataset_size):]
 
         self.dataloaders = {phase: torch.utils.data.DataLoader(self.channel_dataset[phase]) for phase in
                             ['train', 'val']}
@@ -78,9 +82,31 @@ class EnsembleTrainer(Trainer):
     def decode(self, soft_values):
         return llr_to_bits(soft_values)
 
+    def evaluate(self):
+        """
+        Evaluation is done at every SNR until a specific number of decoding errors occur
+        This ensures more stability at each point, than another method which simply simulates X points at every SNR
+        :return: BER and FER vectors
+        """
+        snr_range = self.snr_range['val']
+        ber_total, fer_total = np.zeros(len(snr_range)), np.zeros(len(snr_range))
+
+        with torch.no_grad():
+            for j, snr in enumerate(snr_range):
+                print('start eval snr ' + str(snr))
+                start = time.time()
+                ber, fer, err_indices = self.single_eval(j)
+                ber_total[j] = ber
+                fer_total[j] = fer
+
+                print(f'done. time: {time.time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}')
+            return ber_total, fer_total
+
     def single_eval(self, j):
         # draw test data
-        rx_per_snr, target_per_snr = iter(self.channel_dataset['val'][j])
+        #rx_per_snr, target_per_snr = iter(self.channel_dataset['val'][j])
+        data = self.channel_dataset['val'][j]
+        rx_per_snr, target_per_snr = self.get_rx_target(data)
         rx_per_snr = rx_per_snr.to(device=DEVICE)
         target_per_snr = target_per_snr.to(device=DEVICE)
 
@@ -90,13 +116,75 @@ class EnsembleTrainer(Trainer):
 
         return calculate_accuracy(decoded_words, target_per_snr, DEVICE)
 
+    def get_rx_target(self,data):
+        recieved = data[:][:CONFIG.code_len]
+        target = data[:][CONFIG.code_len:(CONFIG.code_len+CONFIG.info_len)]
+        crc_val = data[:][-1]
+
+        return recieved, target
+
+    def train(self):
+        self.optimization_setup()
+        self.loss_setup()
+        snr_range = self.snr_range['train']
+        self.evaluate()
+        ber_total, fer_total, best_ber = 1, 1, 1
+        early_stopping_bers = []
+        dataset_size = self.channel_dataset['train'][0].shape
+        idx = np.array(range(dataset_size[0]))
+        batch_size = CONFIG.train_minibatch.size
+        for epoch in range(1, CONFIG.num_of_epochs + 1):
+            print(f'Epoch {epoch}')
+            np.random.shuffle(idx)
+            for j, snr in enumerate(snr_range):
+                # draw train data
+                rx_per_snr, target_per_snr = iter(self.channel_dataset['train'][j])
+                rx_per_snr = rx_per_snr.to(device=DEVICE)
+                target_per_snr = target_per_snr.to(device=DEVICE)
+                # shuffle the data
+                rx_per_snr = rx_per_snr[idx]
+                target_per_snr = target_per_snr[idx]
+
+                for i in range(int(dataset_size[0]/batch_size)):
+                    if ((i+1)*batch_size >= dataset_size[0]):
+                        break
+                    rx = rx_per_snr[i*batch_size:(i+1)*batch_size]
+                    target = target_per_snr[i*batch_size:(i+1)*batch_size]
+                    prediction = self.model(rx)
+                    # calculate loss
+                    loss = self.calc_loss(prediction=prediction, labels=target)
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step()
+
+            if epoch % (CONFIG.validation_epochs) == 0:
+                prev_ber_total = ber_total
+                ber_total, fer_total = self.evaluate()
+
+                # extract relevant ber, either scalar or last value in list
+                if type(ber_total) == list:
+                    raise ValueError('Must run training with single eval SNR!!!')
+
+                ber, prev_ber = ber_total, prev_ber_total
+
+                # save weights if model is improved compared to best ber
+                if ber < best_ber:
+                    self.save_weights(epoch)
+                    best_ber = ber
+
+                # early stopping
+                if CONFIG.early_stopping and self.check_early_stopping(ber, prev_ber, early_stopping_bers):
+                    break
+
+        return ber_total, fer_total
+
 if __name__ == "__main__":
     # load config and run evaluation of decoder
     dec = EnsembleTrainer()
 
-    start = time()
+    start = time.time()
 
     ber, fer = dec.train()
 
-    end = time()
+    end = time.time()
     print(f'################## total training time: {end-start} ##################')
