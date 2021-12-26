@@ -1,9 +1,9 @@
 # decoder params
 code_type: Polar
-code_len: 256
-info_len: 128
+code_len: 64
+info_len: 32
 clipping_val: 20
-iteration_num: 6
+iteration_num: 5
 early_stopping: True
 design_SNR: 0.6
 ensemble_dec_num: 4
@@ -18,6 +18,8 @@ noise_seed: 345000
 word_seed: 786000
 test_errors: 500
 crc_order: 11
+words_per_crc_range: 10000
+load_dataset: True
 
 # nn training
 run_name: 'ensemble_256_128_crc11_iter6'
