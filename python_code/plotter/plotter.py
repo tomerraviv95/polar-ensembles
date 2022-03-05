@@ -143,7 +143,7 @@ class Plotter:
             plt.xlim((crc_vals[0] - 10, crc_vals[-1] + 2))
 
 if __name__ == '__main__':
-    # plotter = Plotter(run_over=True, type='FER')
+    plotter = Plotter(run_over=True, type='FER')
 
     # plotter.plot(*get_polar_64_32())
     # plotter.plot(*get_weighted_polar_64_32())
@@ -161,16 +161,16 @@ if __name__ == '__main__':
     # plotter.plot(*get_weighted_polar_256_128_crc11_iter6())
     # plotter.plot(*get_polar_256_128())
 
-# plotter.plot(*get_weighted_polar_256_128_iter7())
+    # plotter.plot(*get_weighted_polar_256_128_iter7())
     # plotter.plot(*get_weighted_polar_256_128_iter8())
 
-    # plotter.plot(*get_polar_1024_512())
-    # plotter.plot(*get_weighted_polar_1024_512())
+    plotter.plot(*get_polar_64_32())
+    plotter.plot(*get_weighted_polar_64_32_iter5())
 
-    # plotter = Plotter(run_over=True, type='pred_crc')
-    # graph_params, config_params = get_polar_64_32()
-    # graph_params["bins"] = 2**5
-    # plotter.plot_crc(graph_params, config_params)
+    #plotter = Plotter(run_over=True, type='pred_crc')
+    #graph_params, config_params = get_polar_256_128()
+    #graph_params["bins"] = 2**5
+    #plotter.plot_crc(graph_params, config_params)
 
     plotter = Plotter(run_over=False, type='FER')
     plotter.plot(*get_polar_64_32(),dec_type='FG')

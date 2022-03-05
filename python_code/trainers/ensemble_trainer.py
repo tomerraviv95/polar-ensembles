@@ -2,6 +2,7 @@ from python_code.utils.python_utils import llr_to_bits
 from python_code.utils.evaluation_criterion import calculate_accuracy
 from python_code.data.channel_model import BPSKmodulation, AWGN
 import torch
+from torch.utils import data
 from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.decoders.ensemble_decoder import EnsembleDecoder
 from python_code.trainers.trainer import Trainer
@@ -134,34 +135,49 @@ class EnsembleTrainer(Trainer):
         dataset_size = self.channel_dataset['train'].dataset_size
         idx = np.array(range(dataset_size[0]))
         batch_size = CONFIG.train_minibatch_size
+        losses = [0]*(CONFIG.num_of_epochs+1)
         for epoch in range(1, CONFIG.num_of_epochs + 1):
+            loss_iter_num = 0
             print(f'Epoch {epoch}')
             np.random.shuffle(idx)
             for j, snr in enumerate(snr_range):
                 # draw train data
-                rx_per_snr, target_per_snr, crc_val_per_snr = iter(self.channel_dataset['train'][j])
-                rx_per_snr = rx_per_snr.to(device=DEVICE)
-                target_per_snr = target_per_snr.to(device=DEVICE)
-                # shuffle the data
-                rx_per_snr = rx_per_snr[idx]
-                target_per_snr = target_per_snr[idx]
+                train_loader = data.Dataloader(self.channel_dataset['train'][j], batch_size=batch_size, shuffle=True)
 
-                for i in range(int(dataset_size[0]/batch_size)):
-                    if ((i+1)*batch_size >= dataset_size[0]):
-                        break
-                    rx = rx_per_snr[i*batch_size:(i+1)*batch_size]
-                    target = target_per_snr[i*batch_size:(i+1)*batch_size]
+                for rx, target, crc_val in train_loader:
                     prediction = self.model(rx)
                     # calculate loss
                     loss = self.calc_loss(prediction=prediction, labels=target)
                     self.optimizer.zero_grad()
                     loss.backward()
                     self.optimizer.step()
+                    losses[epoch] += loss
+                    loss_iter_num += 1
+
+            losses[epoch] /= loss_iter_num
+                # rx_per_snr, target_per_snr, crc_val_per_snr = iter(self.channel_dataset['train'][j])
+                # rx_per_snr = rx_per_snr.to(device=DEVICE)
+                # target_per_snr = target_per_snr.to(device=DEVICE)
+                # # shuffle the data
+                # rx_per_snr = rx_per_snr[idx]
+                # target_per_snr = target_per_snr[idx]
+                #
+                # for i in range(int(dataset_size[0]/batch_size)):
+                #     if ((i+1)*batch_size >= dataset_size[0]):
+                #         break
+                #     rx = rx_per_snr[i*batch_size:(i+1)*batch_size]
+                #     target = target_per_snr[i*batch_size:(i+1)*batch_size]
+                #     prediction = self.model(rx)
+                #     # calculate loss
+                #     loss = self.calc_loss(prediction=prediction, labels=target)
+                #     self.optimizer.zero_grad()
+                #     loss.backward()
+                #     self.optimizer.step()
 
             if epoch % (CONFIG.validation_epochs) == 0:
                 prev_ber_total = ber_total
                 ber_total, fer_total = self.evaluate()
-
+                print(f"train_loss epoch {epoch} : {losses[epoch]}")
                 # extract relevant ber, either scalar or last value in list
                 if type(ber_total) == list:
                     raise ValueError('Must run training with single eval SNR!!!')
