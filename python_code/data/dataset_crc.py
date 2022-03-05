@@ -49,8 +49,10 @@ class DatasetCRC(ChannelModelDataset):
         self.words_per_crc = words_per_crc
         self.decoder_name = decoder_name
         self.database = []
+        self.dataset_size = []
         for i in range(self.snr_range.size):
-            self.database.append([])
+            self.database.append(0)
+            self.dataset_size.append(0)
         self.load_model()
         self.crc2int = lambda crc : int("".join(str(int(x)) for x in crc),2)
 
@@ -102,7 +104,7 @@ class DatasetCRC(ChannelModelDataset):
                                                            code_gm=self.model.code_gm,
                                                            decoder_name=self.decoder_name,
                                                            crc_order=self.crc_order)
-
+        database = [[] for i in range(len(self.database))]
         words = 0
         j = 0
         done = False
@@ -120,7 +122,7 @@ class DatasetCRC(ChannelModelDataset):
 
                 for val in pred_crc:
                     if (np.sum(words_per_crc_counter[j]) >= 4*self.words_per_crc): # dataset is full
-                        self.database[j] = torch.Tensor(self.database[j])
+                        self.database[j] = torch.stack(database[j])
                         if self.save_dataset:
                             self.save_data(j,self.snr_range[j])
                         j += 1
@@ -135,7 +137,7 @@ class DatasetCRC(ChannelModelDataset):
                     if words_per_crc_counter[j,idx] >= self.words_per_crc:
                         continue
                     val_tens = torch.Tensor([val_int])
-                    self.database[j].append(torch.cat((rx_per_snr[idx],target_per_snr[idx], val_tens),0))
+                    database[j].append(torch.cat((rx_per_snr[idx],target_per_snr[idx], val_tens),0))
                     words_per_crc_counter[j,idx] += 1
                     print(f"snr {j+1}/{len(self.snr_range)} words {words}, per range {words_per_crc_counter[j]}")
 
@@ -144,27 +146,27 @@ class DatasetCRC(ChannelModelDataset):
 
     def load_data(self):
         for j,snr in enumerate(self.snr_range):
-            self.database[j] = torch.load(os.path.join(f'{DATABASE_DIR}\\dataset_code_len_{self.code_len}_crc_order_{self.crc_order}_snr_{snr}.pt'))
+            self.database[j] = torch.load(os.path.join(f'{DATABASE_DIR}\\dataset_code_len_{self.code_len}_crc_order_{self.crc_order}_words_per_crc_{self.words_per_crc}_snr_{snr}.pt'))
 
     def save_data(self,j,snr):
-        torch.save(self.database[j], os.path.join(f'{DATABASE_DIR}\\dataset_code_len_{self.code_len}_crc_order_{self.crc_order}_snr_{snr}.pt'))
-
+        torch.save(self.database[j], os.path.join(f'{DATABASE_DIR}\\dataset_code_len_{self.code_len}_crc_order_{self.crc_order}_words_per_crc_{self.words_per_crc}_snr_{snr}.pt'))
+        self.dataset_size[j] = self.database[j].shape[0]
 
     def __getitem__(self, item):
         snr_data = self.database[item]
-        recieved = snr_data[:][:self.code_len]
-        target = snr_data[:][self.code_len:(self.code_len+self.info_len)]
-        crc_val = snr_data[:][-1]
+        recieved = snr_data[:, :self.code_len]
+        target = snr_data[:, self.code_len:(self.code_len+self.info_len)]
+        crc_val = snr_data[:, -1]
         recieved = torch.tensor(recieved).float().view(-1, self.code_len)
         target = torch.tensor(target).float().view(-1, self.info_len)
-        return recieved, target
+        return recieved, target, crc_val
 
     def decode(self, soft_values):
         return llr_to_bits(soft_values)
 
 
-if __name__ == "__main__":
-
+def generateDataset(train_data=True):
+    ''' generate dataset for ensemble decoder'''
     model = EnsembleDecoder(code_len=CONFIG.code_len,
                             info_len=CONFIG.info_len,
                             design_snr=CONFIG.design_SNR,
@@ -180,9 +182,14 @@ if __name__ == "__main__":
     train_SNRs = np.linspace(CONFIG.train_SNR_start, CONFIG.train_SNR_end, num=CONFIG.train_num_SNR)
     val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
     zero_word_only = {'train': True, 'val': False}
-    snr_range = train_SNRs
+    if train_data:
+        snr_range = train_SNRs
+        words_per_crc = CONFIG.words_per_crc_range
+    else:
+        snr_range = val_SNRs
+        words_per_crc = CONFIG.val_batch_size
 
-    data = DatasetCRC(load_dataset=False, save_dataset=True, words_per_crc=CONFIG.words_per_crc_range,
+    data = DatasetCRC(load_dataset=False, save_dataset=True, words_per_crc=words_per_crc,
                       code_len=CONFIG.code_len,
                       info_len=CONFIG.info_len,
                       code_type=CONFIG.code_type,
@@ -200,4 +207,55 @@ if __name__ == "__main__":
                       code_gm=model.code_gm,
                       decoder_name="Ensemble",
                       crc_order=CONFIG.crc_order)
+    return data
 
+def loadDataset(train_data=True):
+    ''' load previously generated dataset for ensemble decoder'''
+    model = EnsembleDecoder(code_len=CONFIG.code_len,
+                            info_len=CONFIG.info_len,
+                            design_snr=CONFIG.design_SNR,
+                            iteration_num=CONFIG.iteration_num,
+                            clipping_val=CONFIG.clipping_val,
+                            device=DEVICE,
+                            crc_order=CONFIG.crc_order,
+                            num_of_decoders=CONFIG.ensemble_dec_num,
+                            ensemble_crc_dist=CONFIG.ensemble_crc_dist)
+
+    rand_gen = np.random.RandomState(CONFIG.noise_seed)
+    word_rand_gen = np.random.RandomState(CONFIG.word_seed)
+    train_SNRs = np.linspace(CONFIG.train_SNR_start, CONFIG.train_SNR_end, num=CONFIG.train_num_SNR)
+    val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
+    zero_word_only = {'train': True, 'val': False}
+    if train_data:
+        snr_range = train_SNRs
+        words_per_crc = CONFIG.words_per_crc_range
+    else:
+        snr_range = val_SNRs
+        words_per_crc = CONFIG.val_batch_size
+
+    data = DatasetCRC(load_dataset=True, save_dataset=False, words_per_crc=words_per_crc,
+                      code_len=CONFIG.code_len,
+                      info_len=CONFIG.info_len,
+                      code_type=CONFIG.code_type,
+                      use_llr=True,
+                      modulation=BPSKmodulation,
+                      channel=AWGN,
+                      batch_size=CONFIG.train_minibatch_size,
+                      snr_range=snr_range,
+                      zero_word_only=False,
+                      random=rand_gen,
+                      wordRandom=word_rand_gen,
+                      clipping_val=CONFIG.clipping_val,
+                      info_ind=model.info_ind,
+                      system_enc=SYSTEMATIC_ENCODING,
+                      code_gm=model.code_gm,
+                      decoder_name="Ensemble",
+                      crc_order=CONFIG.crc_order)
+    return data
+
+if __name__ == "__main__":
+
+    data1 = generateDataset()
+    # data2 = generateDataset(train_data=False)
+    # data2 = loadDataset()
+    print()

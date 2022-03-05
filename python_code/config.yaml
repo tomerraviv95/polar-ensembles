@@ -18,7 +18,7 @@ noise_seed: 345000
 word_seed: 786000
 test_errors: 500
 crc_order: 11
-words_per_crc_range: 10
+words_per_crc_range: 10000
 load_dataset: True
 
 # nn training
@@ -31,5 +31,5 @@ num_of_epochs: 300
 validation_epochs: 5
 train_minibatch_size: 500
 train_SNR_start: 1.25
-train_SNR_end: 3.25
-train_num_SNR: 3
+train_SNR_end: 4.25
+train_num_SNR: 4
