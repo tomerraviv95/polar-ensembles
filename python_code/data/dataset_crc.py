@@ -147,6 +147,7 @@ class DatasetCRC(ChannelModelDataset):
     def load_data(self):
         for j,snr in enumerate(self.snr_range):
             self.database[j] = torch.load(os.path.join(f'{DATABASE_DIR}\\dataset_code_len_{self.code_len}_crc_order_{self.crc_order}_words_per_crc_{self.words_per_crc}_snr_{snr}.pt'))
+            self.dataset_size[j] = self.database[j].shape[0]
 
     def save_data(self,j,snr):
         torch.save(self.database[j], os.path.join(f'{DATABASE_DIR}\\dataset_code_len_{self.code_len}_crc_order_{self.crc_order}_words_per_crc_{self.words_per_crc}_snr_{snr}.pt'))
@@ -161,8 +162,39 @@ class DatasetCRC(ChannelModelDataset):
         target = torch.tensor(target).float().view(-1, self.info_len)
         return recieved, target, crc_val
 
+    def getContinues(self):
+        ''' return the dataset the the continues dataset class'''
+        return DatasetCRC_AllSnr(self)
+
     def decode(self, soft_values):
         return llr_to_bits(soft_values)
+
+class DatasetCRC_AllSnr(DatasetCRC):
+    ''' save all the crc dataset in one continues dataset'''
+
+    def __init__(self, dataset_crc):
+        self.code_len = dataset_crc.code_len
+        self.info_len = dataset_crc.info_len
+        # self.batch_size = dataset_crc.batch_size
+        # self.snr_range = dataset_crc.snr_range
+        self.words_per_crc = dataset_crc.words_per_crc
+        self.decoder_name = dataset_crc.decoder_name
+        self.dataset_size = 0
+        for j,s in enumerate(dataset_crc.dataset_size):
+            self.dataset_size += s
+        dataset = []
+        for j,database in enumerate(dataset_crc.database):
+            dataset.append(database)
+        self.dataset = torch.cat(dataset,dim=0)
+
+    def __getitem__(self, item):
+        rx = self.dataset[item, :self.code_len]
+        target = self.dataset[item, self.code_len:(self.code_len+self.info_len)]
+        crc_val = self.dataset[item, -1]
+        return rx, target, crc_val
+
+    def __len__(self):
+        return self.dataset_size
 
 
 def generateDataset(train_data=True):

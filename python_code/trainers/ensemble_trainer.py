@@ -92,23 +92,25 @@ class EnsembleTrainer(Trainer):
         """
         snr_range = self.snr_range['val']
         ber_total, fer_total = np.zeros(len(snr_range)), np.zeros(len(snr_range))
-
         with torch.no_grad():
-            for j, snr in enumerate(snr_range):
-                print('start eval snr ' + str(snr))
-                start = time.time()
-                ber, fer, err_indices = self.single_eval(j)
-                ber_total[j] = ber
-                fer_total[j] = fer
+            # for j, snr in enumerate(snr_range):
+            # print('start eval snr ' + str(snr))
+            start = time.time()
+            cont_dataset = self.channel_dataset['val'].getContinues()
+            max_batch = round(len(cont_dataset)/CONFIG.val_batch_size)
+            val_loader = data.DataLoader(cont_dataset, batch_size=CONFIG.val_batch_size, shuffle=False)
+            i=0
+            for rx, target, crc_val in val_loader:
+                ber, fer, err_indices = self.single_eval(rx, target, crc_val)
+                ber_total += ber
+                fer_total += fer
+                i+=1
+                print(f"val batch {i}/{max_batch}")
 
-                print(f'done. time: {time.time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}')
-            return ber_total, fer_total
+            print(f'done. time: {time.time() - start}, ber: {ber_total}, fer: {fer_total}, log-ber:{-np.log(ber_total)}')
+        return ber_total, fer_total
 
-    def single_eval(self, j):
-        # draw test data
-        rx_per_snr, target_per_snr, crc_val_per_snr = iter(self.channel_dataset['val'][j])
-        # data = self.channel_dataset['val'][j]
-        # rx_per_snr, target_per_snr, crc_val_per_snr = self.get_rx_target_crc(data)
+    def single_eval(self, rx_per_snr, target_per_snr, crc_val):
         rx_per_snr = rx_per_snr.to(device=DEVICE)
         target_per_snr = target_per_snr.to(device=DEVICE)
 
@@ -137,22 +139,21 @@ class EnsembleTrainer(Trainer):
         batch_size = CONFIG.train_minibatch_size
         losses = [0]*(CONFIG.num_of_epochs+1)
         for epoch in range(1, CONFIG.num_of_epochs + 1):
-            loss_iter_num = 0
             print(f'Epoch {epoch}')
-            np.random.shuffle(idx)
-            for j, snr in enumerate(snr_range):
-                # draw train data
-                train_loader = data.Dataloader(self.channel_dataset['train'][j], batch_size=batch_size, shuffle=True)
-
-                for rx, target, crc_val in train_loader:
-                    prediction = self.model(rx)
-                    # calculate loss
-                    loss = self.calc_loss(prediction=prediction, labels=target)
-                    self.optimizer.zero_grad()
-                    loss.backward()
-                    self.optimizer.step()
-                    losses[epoch] += loss
-                    loss_iter_num += 1
+            loss_iter_num = 0
+            train_cont_dataset = self.channel_dataset['train'].getContinues()
+            max_batch = round(len(train_cont_dataset) / CONFIG.train_minibatch_size)
+            train_loader = data.DataLoader(train_cont_dataset, batch_size=CONFIG.train_minibatch_size, shuffle=True)
+            for rx, target, crc_val in train_loader:
+                prediction = self.model(rx)
+                # calculate loss
+                loss = self.calc_loss(prediction=prediction, labels=target)
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+                losses[epoch] += loss
+                loss_iter_num += 1
+                print(f"train batch {loss_iter_num}/{max_batch}")
 
             losses[epoch] /= loss_iter_num
                 # rx_per_snr, target_per_snr, crc_val_per_snr = iter(self.channel_dataset['train'][j])
