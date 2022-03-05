@@ -44,7 +44,7 @@ class EnsembleTrainer(Trainer):
         self.snr_range = {'train': train_SNRs, 'val': val_SNRs}
         batch_size = {'train': CONFIG.train_minibatch_size, 'val': CONFIG.val_batch_size}
         self.channel_dataset = {phase: DatasetCRC(load_dataset=CONFIG.load_dataset,
-                                 save_dataset=not(CONFIG.load_dataset),
+                                 save_dataset=False,
                                  words_per_crc=CONFIG.words_per_crc_range,
                                  code_len=CONFIG.code_len,
                                  info_len=CONFIG.info_len,
