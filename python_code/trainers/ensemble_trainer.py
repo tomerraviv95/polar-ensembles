@@ -7,6 +7,7 @@ from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.decoders.ensemble_decoder import EnsembleDecoder
 from python_code.trainers.trainer import Trainer
 from python_code.data.dataset_crc import DatasetCRC
+from python_code.data.channel_dataset import ChannelModelDataset
 from globals import CONFIG, DEVICE
 import time
 import numpy as np
@@ -65,6 +66,24 @@ class EnsembleTrainer(Trainer):
                                  crc_order=CONFIG.crc_order)
                                  for phase in ['train', 'val']}
 
+        self.channel_dataset['test'] = ChannelModelDataset(code_len=CONFIG.code_len,
+                                                           info_len=CONFIG.info_len,
+                                                           code_type=CONFIG.code_type,
+                                                           use_llr=USE_LLR,
+                                                           modulation=BPSKmodulation,
+                                                           channel=AWGN,
+                                                           batch_size=batch_size['val'],
+                                                           snr_range=self.snr_range['val'],
+                                                           zero_word_only=zero_word_only['val'],
+                                                           random=rand_gen,
+                                                           wordRandom=word_rand_gen,
+                                                           clipping_val=CONFIG.clipping_val,
+                                                           info_ind=self.model.info_ind,
+                                                           system_enc=SYSTEMATIC_ENCODING,
+                                                           code_gm=self.model.code_gm,
+                                                           decoder_name=self.decoder_name,
+                                                           crc_order=CONFIG.crc_order)
+
         # self.database = crc_dataset.database
         # self.channel_dataset['train'] = [0]*len(train_SNRs)
         # self.channel_dataset['val'] = [0]*len(train_SNRs)
@@ -83,6 +102,46 @@ class EnsembleTrainer(Trainer):
 
     def decode(self, soft_values):
         return llr_to_bits(soft_values)
+
+    def test(self):
+        """
+        Evaluation is done at every SNR until a specific number of decoding errors occur
+        This ensures more stability at each point, than another method which simply simulates X points at every SNR
+        :return: BER and FER vectors
+        """
+        snr_range = self.snr_range['val']
+        ber_total, fer_total = np.zeros(len(snr_range)), np.zeros(len(snr_range))
+
+        with torch.no_grad():
+            for j, snr in enumerate(snr_range):
+                err_count = 0
+                snr_test_size = 0.0
+                print('start eval snr ' + str(snr))
+                start = time.time()
+                while err_count < CONFIG.test_errors:
+                    ber, fer, err_indices = self.single_test(j)
+                    ber_total[j] += ber
+                    fer_total[j] += fer
+                    err_count += err_indices.shape[0]
+                    snr_test_size += 1.0
+
+                ber_total[j] /= snr_test_size
+                fer_total[j] /= snr_test_size
+                print(
+                    f'done. time: {time.time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}')
+            return ber_total, fer_total
+
+    def single_test(self, j):
+        # draw test data
+        rx_per_snr, target_per_snr = iter(self.channel_dataset['test'][j])
+        rx_per_snr = rx_per_snr.to(device=DEVICE)
+        target_per_snr = target_per_snr.to(device=DEVICE)
+
+        # decode and calculate accuracy
+        output_list, not_satisfied_list = self.model(rx_per_snr)
+        decoded_words = self.decode(output_list[-1])
+
+        return calculate_accuracy(decoded_words, target_per_snr, DEVICE)
 
     def evaluate(self):
         """
