@@ -1,7 +1,7 @@
 # decoder params
 code_type: Polar
-code_len: 64
-info_len: 32
+code_len: 256
+info_len: 128
 clipping_val: 20
 iteration_num: 5
 early_stopping: False
@@ -31,5 +31,5 @@ num_of_epochs: 5
 validation_epochs: 1
 train_minibatch_size: 200
 train_SNR_start: 1.25
-train_SNR_end: 3.25
-train_num_SNR: 3
+train_SNR_end: 4.25
+train_num_SNR: 4
