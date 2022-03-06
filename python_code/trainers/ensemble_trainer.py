@@ -149,8 +149,7 @@ class EnsembleTrainer(Trainer):
 
     def single_test(self, j):
         # draw test data
-        data = self.channel_dataset['val'][j]
-        rx_per_snr, target_per_snr, crc_val_per_snr = self.get_rx_target_crc(data)
+        rx_per_snr, target_per_snr = iter(self.channel_dataset['val'][j])
         rx_per_snr = rx_per_snr.to(device=DEVICE)
         target_per_snr = target_per_snr.to(device=DEVICE)
 
