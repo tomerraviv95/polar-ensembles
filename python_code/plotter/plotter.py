@@ -38,10 +38,7 @@ class Plotter:
         else:
             # otherwise - run again
             print("calculating fresh")
-            if isinstance(dec, EnsembleTrainer):
-                ber_total, fer_total = dec.test()
-            else:
-                ber_total, fer_total = dec.evaluate()
+            ber_total, fer_total = dec.evaluate()
             to_save_dict = {'BER': ber_total, 'FER': fer_total}
             save_pkl(plots_path, to_save_dict)
             graph = to_save_dict[self.type]

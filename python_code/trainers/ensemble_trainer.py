@@ -21,7 +21,8 @@ class EnsembleTrainer(Trainer):
     """
     Wraps the decoder with the evaluation method
     """
-    def __init__(self):
+    def __init__(self,test_mode=False):
+        self.test_mode = test_mode
         super().__init__()
 
     def load_model(self):
@@ -44,53 +45,67 @@ class EnsembleTrainer(Trainer):
         zero_word_only = {'train': True, 'val': False}
         self.snr_range = {'train': train_SNRs, 'val': val_SNRs}
         batch_size = {'train': CONFIG.train_minibatch_size, 'val': CONFIG.val_batch_size}
-        self.channel_dataset = {phase: DatasetCRC(load_dataset=CONFIG.load_dataset,
-                                 save_dataset=False,
-                                 words_per_crc=CONFIG.words_per_crc_range,
-                                 code_len=CONFIG.code_len,
-                                 info_len=CONFIG.info_len,
-                                 code_type=CONFIG.code_type,
-                                 use_llr=USE_LLR,
-                                 modulation=BPSKmodulation,
-                                 channel=AWGN,
-                                 batch_size=batch_size[phase],
-                                 snr_range=self.snr_range[phase],
-                                 zero_word_only=zero_word_only[phase],
-                                 random=rand_gen,
-                                 wordRandom=word_rand_gen,
-                                 clipping_val=CONFIG.clipping_val,
-                                 info_ind=self.model.info_ind,
-                                 system_enc=SYSTEMATIC_ENCODING,
-                                 code_gm=self.model.code_gm,
-                                 decoder_name=self.decoder_name,
-                                 crc_order=CONFIG.crc_order)
-                                 for phase in ['train', 'val']}
 
-        self.channel_dataset['test'] = ChannelModelDataset(code_len=CONFIG.code_len,
-                                                           info_len=CONFIG.info_len,
-                                                           code_type=CONFIG.code_type,
-                                                           use_llr=USE_LLR,
-                                                           modulation=BPSKmodulation,
-                                                           channel=AWGN,
-                                                           batch_size=batch_size['val'],
-                                                           snr_range=self.snr_range['val'],
-                                                           zero_word_only=zero_word_only['val'],
-                                                           random=rand_gen,
-                                                           wordRandom=word_rand_gen,
-                                                           clipping_val=CONFIG.clipping_val,
-                                                           info_ind=self.model.info_ind,
-                                                           system_enc=SYSTEMATIC_ENCODING,
-                                                           code_gm=self.model.code_gm,
-                                                           decoder_name=self.decoder_name,
-                                                           crc_order=CONFIG.crc_order)
+        self.channel_dataset['train'] = DatasetCRC(load_dataset=CONFIG.load_dataset,
+                                                  save_dataset=False,
+                                                  words_per_crc=CONFIG.words_per_crc_range,
+                                                  code_len=CONFIG.code_len,
+                                                  info_len=CONFIG.info_len,
+                                                  code_type=CONFIG.code_type,
+                                                  use_llr=USE_LLR,
+                                                  modulation=BPSKmodulation,
+                                                  channel=AWGN,
+                                                  batch_size=batch_size['train'],
+                                                  snr_range=self.snr_range['train'],
+                                                  zero_word_only=zero_word_only['train'],
+                                                  random=rand_gen,
+                                                  wordRandom=word_rand_gen,
+                                                  clipping_val=CONFIG.clipping_val,
+                                                  info_ind=self.model.info_ind,
+                                                  system_enc=SYSTEMATIC_ENCODING,
+                                                  code_gm=self.model.code_gm,
+                                                  decoder_name=self.decoder_name,
+                                                  crc_order=CONFIG.crc_order)
 
-        # self.database = crc_dataset.database
-        # self.channel_dataset['train'] = [0]*len(train_SNRs)
-        # self.channel_dataset['val'] = [0]*len(train_SNRs)
-        # for j,snr in enumerate(train_SNRs):
-        #     dataset_size = len(crc_dataset.database[j])
-        #     self.channel_dataset['train'][j] = crc_dataset.database[j][:int(0.85*dataset_size)]
-        #     self.channel_dataset['val'][j] = crc_dataset.database[j][int(0.85*dataset_size):] # TODO make different dataset for validation
+        if self.test_mode:
+            self.channel_dataset['val'] = ChannelModelDataset(code_len=CONFIG.code_len,
+                                                               info_len=CONFIG.info_len,
+                                                               code_type=CONFIG.code_type,
+                                                               use_llr=USE_LLR,
+                                                               modulation=BPSKmodulation,
+                                                               channel=AWGN,
+                                                               batch_size=batch_size['val'],
+                                                               snr_range=self.snr_range['val'],
+                                                               zero_word_only=zero_word_only['val'],
+                                                               random=rand_gen,
+                                                               wordRandom=word_rand_gen,
+                                                               clipping_val=CONFIG.clipping_val,
+                                                               info_ind=self.model.info_ind,
+                                                               system_enc=SYSTEMATIC_ENCODING,
+                                                               code_gm=self.model.code_gm,
+                                                               decoder_name=self.decoder_name,
+                                                               crc_order=CONFIG.crc_order)
+        else:
+            self.channel_dataset['val'] = DatasetCRC(load_dataset=CONFIG.load_dataset,
+                                         save_dataset=False,
+                                         words_per_crc=CONFIG.words_per_crc_range,
+                                         code_len=CONFIG.code_len,
+                                         info_len=CONFIG.info_len,
+                                         code_type=CONFIG.code_type,
+                                         use_llr=USE_LLR,
+                                         modulation=BPSKmodulation,
+                                         channel=AWGN,
+                                         batch_size=batch_size['val'],
+                                         snr_range=self.snr_range['val'],
+                                         zero_word_only=zero_word_only['val'],
+                                         random=rand_gen,
+                                         wordRandom=word_rand_gen,
+                                         clipping_val=CONFIG.clipping_val,
+                                         info_ind=self.model.info_ind,
+                                         system_enc=SYSTEMATIC_ENCODING,
+                                         code_gm=self.model.code_gm,
+                                         decoder_name=self.decoder_name,
+                                         crc_order=CONFIG.crc_order)
 
         self.dataloaders = {phase: torch.utils.data.DataLoader(self.channel_dataset[phase]) for phase in
                             ['train', 'val']}
@@ -133,7 +148,7 @@ class EnsembleTrainer(Trainer):
 
     def single_test(self, j):
         # draw test data
-        rx_per_snr, target_per_snr = iter(self.channel_dataset['test'][j])
+        rx_per_snr, target_per_snr = iter(self.channel_dataset['val'][j])
         rx_per_snr = rx_per_snr.to(device=DEVICE)
         target_per_snr = target_per_snr.to(device=DEVICE)
 
@@ -149,6 +164,11 @@ class EnsembleTrainer(Trainer):
         This ensures more stability at each point, than another method which simply simulates X points at every SNR
         :return: BER and FER vectors
         """
+
+        if self.test_mode:
+            ber_total, fer_total = self.test()
+            return ber_total, fer_total
+
         snr_range = self.snr_range['val']
         ber_total, fer_total = np.zeros(len(snr_range)), np.zeros(len(snr_range))
         with torch.no_grad():
