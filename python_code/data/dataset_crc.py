@@ -287,7 +287,7 @@ def loadDataset(train_data=True):
 
 if __name__ == "__main__":
 
-    data1 = generateDataset()
+    # data1 = generateDataset()
     data2 = generateDataset(train_data=False)
     # data2 = loadDataset()
     print()
