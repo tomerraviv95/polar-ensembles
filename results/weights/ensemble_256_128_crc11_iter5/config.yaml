@@ -1,0 +1,35 @@
+# decoder params
+code_type: Polar
+code_len: 256
+info_len: 128
+clipping_val: 20
+iteration_num: 5
+early_stopping: False
+design_SNR: 0.6
+ensemble_dec_num: 4
+ensemble_crc_dist: 'uniform'
+
+# data params
+val_batch_size: 10000
+val_SNR_start: 2.75
+val_SNR_end: 2.75
+val_num_SNR: 1
+noise_seed: 345000
+word_seed: 786000
+test_errors: 500
+crc_order: 11
+words_per_crc_range: 10000
+load_dataset: True
+
+# nn training
+run_name: 'ensemble_256_128_crc11_iter5'
+load_weights: False
+lr: 0.01
+optimizer_type: 'ADAM'
+criterion_type: 'BCE'
+num_of_epochs: 20
+validation_epochs: 1
+train_minibatch_size: 500
+train_SNR_start: 1.25
+train_SNR_end: 4.25
+train_num_SNR: 4
