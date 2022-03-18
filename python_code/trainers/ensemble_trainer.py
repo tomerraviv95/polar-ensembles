@@ -4,7 +4,9 @@ from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.decoders.ensemble_decoder import EnsembleDecoder
 from python_code.trainers.trainer import Trainer
 from globals import CONFIG, DEVICE
-from time import time
+import time
+import numpy as np
+import torch
 
 EARLY_TERMINATION = True
 
@@ -36,14 +38,42 @@ class EnsembleTrainer(Trainer):
     def decode(self, soft_values):
         return llr_to_bits(soft_values)
 
-    def single_eval(self, j):
+    def evaluate(self,take_crc_0=False):
+        """
+        Evaluation is done at every SNR until a specific number of decoding errors occur
+        This ensures more stability at each point, than another method which simply simulates X points at every SNR
+        :return: BER and FER vectors
+        """
+        snr_range = self.snr_range['val']
+        ber_total, fer_total = np.zeros(len(snr_range)), np.zeros(len(snr_range))
+
+        with torch.no_grad():
+            for j, snr in enumerate(snr_range):
+                err_count = 0
+                snr_test_size = 0.0
+                print('start eval snr ' + str(snr))
+                start = time.time()
+                while err_count < CONFIG.test_errors:
+                    ber, fer, err_indices = self.single_eval(j, take_crc_0=take_crc_0)
+                    ber_total[j] += ber
+                    fer_total[j] += fer
+                    err_count += err_indices.shape[0]
+                    snr_test_size += 1.0
+
+                ber_total[j] /= snr_test_size
+                fer_total[j] /= snr_test_size
+                print(
+                    f'done. time: {time.time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}')
+            return ber_total, fer_total
+
+    def single_eval(self, j, take_crc_0=False):
         # draw test data
         rx_per_snr, target_per_snr = iter(self.channel_dataset['val'][j])
         rx_per_snr = rx_per_snr.to(device=DEVICE)
         target_per_snr = target_per_snr.to(device=DEVICE)
 
         # decode and calculate accuracy
-        output, not_satisfied_list = self.model(rx_per_snr)
+        output, not_satisfied_list = self.model(rx_per_snr, take_crc_0=take_crc_0)
         decoded_words = self.decode(output)
 
         return calculate_accuracy(decoded_words, target_per_snr, DEVICE)

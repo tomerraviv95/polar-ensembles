@@ -1,9 +1,9 @@
 # decoder params
 code_type: Polar
-code_len: 256
-info_len: 128
+code_len: 64
+info_len: 32
 clipping_val: 20
-iteration_num: 6
+iteration_num: 5
 early_stopping: True
 design_SNR: 0.6
 ensemble_dec_num: 4
@@ -20,12 +20,12 @@ test_errors: 500
 crc_order: 11
 
 # nn training
-run_name: 'ensemble_256_128_crc11_iter6'
+run_name: 'wfg_64_32_crc11_iter5'
 load_weights: False
 lr: 0.01
 optimizer_type: 'ADAM'
 criterion_type: 'BCE'
-num_of_epochs: 300
+num_of_epochs: 50
 validation_epochs: 5
 train_minibatch_size: 500
 train_SNR_start: 1.25
