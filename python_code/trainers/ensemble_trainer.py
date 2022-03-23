@@ -4,7 +4,7 @@ from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.decoders.ensemble_decoder import EnsembleDecoder
 from python_code.trainers.trainer import Trainer
 from globals import CONFIG, DEVICE
-import time
+from time import time
 import numpy as np
 import torch
 
@@ -52,7 +52,7 @@ class EnsembleTrainer(Trainer):
                 err_count = 0
                 snr_test_size = 0.0
                 print('start eval snr ' + str(snr))
-                start = time.time()
+                start = time()
                 while err_count < CONFIG.test_errors:
                     ber, fer, err_indices = self.single_eval(j, take_crc_0=take_crc_0)
                     ber_total[j] += ber
@@ -63,7 +63,7 @@ class EnsembleTrainer(Trainer):
                 ber_total[j] /= snr_test_size
                 fer_total[j] /= snr_test_size
                 print(
-                    f'done. time: {time.time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}')
+                    f'done. time: {time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}')
             return ber_total, fer_total
 
     def single_eval(self, j, take_crc_0=False):
