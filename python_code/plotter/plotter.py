@@ -148,12 +148,12 @@ class Plotter:
 if __name__ == '__main__':
 
     ''' 64 32 '''
-    plotter = Plotter(run_over=True, type='FER')
+    plotter = Plotter(run_over=False, type='FER')
     plotter.plot(*get_polar_64_32(),dec_type='FG')
     plotter.plot(*get_weighted_polar_64_32_iter6_crc11(),dec_type='FG')
-
-    # plotter = Plotter(run_over=True, type='FER')
     plotter.plot(*get_ensemble_64_32_iter6_crc11(),dec_type='Ensemble')
+
+    plotter = Plotter(run_over=True, type='FER')
     plotter.plot(*get_ensemble_64_32_iter6_crc11_best_dec(),dec_type='Ensemble', take_crc_0=True)
 
     ''' 256 128 '''

@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import matlib as mb
 import torch
 
 def get_crc_key(order=11):
@@ -87,7 +88,41 @@ def crc_check(data,order):
 
 def crc2int(crc : np.array):
     batch_size = np.shape(crc)[0]
-    crc_val = np.zeros((batch_size,1))
+    crc_val = np.zeros((batch_size,1)).astype(int)
     for row in range(batch_size):
         crc_val[row] = int("".join(str(int(x)) for x in crc[row]),2)
-    return crc_val
+    return crc_val.flatten('F')
+
+def addBin(arr, val):
+    ''' Binary addition of val to each element of arr
+        arr dim is: (idx,binary values)'''
+    to_tensor = False
+    if isinstance(arr,torch.Tensor):
+        arr = arr.cpu().detach().numpy()
+        to_tensor = True
+    val = np.array([int(i) for i in np.binary_repr(val)])
+    size_arr = np.shape(arr)
+    val = np.pad(val,pad_width=((size_arr[1]-len(val)),0))
+    val = mb.repmat(val,size_arr[0],1)
+    c_in = np.array(([0]*size_arr[0]))
+    res = np.zeros(size_arr)
+    for i in reversed(range(size_arr[1])):
+        A = arr[:,i].astype(int)
+        B = val[:,i]
+        res[:,i] = np.bitwise_xor(np.bitwise_xor(A,B), c_in)
+        a = np.bitwise_and(A,B)
+        b = np.bitwise_and(A,c_in)
+        c = np.bitwise_and(c_in,B)
+        c_in = np.bitwise_or(a,b)
+        c_in = np.bitwise_or(c_in,c)
+    c_in = np.reshape(c_in,(len(c_in),1))
+    res = np.concatenate((c_in,res),axis=1)
+    if to_tensor:
+        res = torch.Tensor(res)
+    return res
+
+if __name__ == "__main__":
+    arr = np.array([[1,0,1],[0,0,1]])
+    val = 3
+    res = addBin(arr,val)
+    print(res)

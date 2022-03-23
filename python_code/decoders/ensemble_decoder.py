@@ -20,7 +20,8 @@ class EnsembleDecoder(Decoder):
 
         self.num_of_decoders = num_of_decoders
         self.crc_order = crc_order
-        self.InitSelectorByCrc(ensemble_crc_dist)
+        self.crc_dist = ensemble_crc_dist
+        self.InitSelectorByCrc()
         self.decoders_mask = [0] * (self.num_of_decoders + 1)
         self._build_model()
 
@@ -40,41 +41,86 @@ class EnsembleDecoder(Decoder):
         decode CRC then use it to cancel the NN that do not designated to it
         """
         output = torch.zeros((rx.size(0), self.info_len), device=rx.device)
-
-        if take_crc_0:
-            for id,dec in enumerate(self.decoders):
-                output_t, not_satisfied = dec(rx)
-                words = output_t[-1]
-                decoded_words = llr_to_bits(words)
-                crc_vals = crc.crc2int(crc.crc_check(decoded_words, CONFIG.crc_order))
-                idx = (crc_vals == 0).flatten("F")
-                output[idx] = words[idx]
-                if id == 0:
-                    output = words # in case all decoders mistaken take the output from 1 of them, TODO think which one to take
-            return output, not_satisfied
-
-        for i in range(len(self.decoders_mask)):
-            self.decoders_mask[i] = torch.zeros((rx.size(0), rx.size(0)), device=rx.device)
         output_t, not_satisfied = self.decoders[0](rx)
         decoded_words = llr_to_bits(output_t[-1])
-        pred_crc = crc.crc_check(decoded_words, CONFIG.crc_order)
-        crc_vals = crc.crc2int(pred_crc)
-        for idx, val in enumerate(crc_vals):
-            dec_id = self.selector(val)
-            self.decoders_mask[dec_id][idx,idx] = 1 # this will mask words from decoders with crc not in range
+        pred_crc = torch.Tensor(crc.crc_check(decoded_words, self.crc_order))
+        dec_mask = self.getDecodersMask(pred_crc)
+        np_dec_mask = dec_mask.cpu().detach().numpy()
 
-        for id,dec in enumerate(self.decoders):
-            if id != 0: # decoder number 0 already decoded for crc value
-                output_t, not_satisfied = dec(rx)
-            output += torch.matmul(self.decoders_mask[id],output_t[-1]) # taking the last iteration
-            # print(f'dec number {id} got {torch.tensor.sum(self.decoders_mask[id])} / {rx.size(0)} words to decode')
+
+        if take_crc_0:
+            best_output = torch.full((rx.size(0), self.info_len),-1, dtype=torch.float, device=rx.device)
+            for dec_id,dec in enumerate(self.decoders):
+                if dec_id != 0: # already decoded
+                    output_t, not_satisfied = dec(rx)
+                words = output_t[-1]
+                decoded_words = llr_to_bits(words)
+                crc_vals = crc.crc2int(crc.crc_check(decoded_words, self.crc_order))
+                idx1 = (crc.crc2int(np_dec_mask) == dec_id).flatten("F")
+                idx2 = (crc_vals == 0).flatten("F")
+                best_output[idx1] = words[idx1]
+                best_output[idx2] = words[idx2]
+            output = best_output
+
+        else:
+            for dec_id,dec in enumerate(self.decoders):
+                if dec_id != 0: # already decoded
+                    output_t, not_satisfied = dec(rx)
+                words = output_t[-1]
+                idx = (crc.crc2int(np_dec_mask) == dec_id).flatten("F")
+                output[idx] = words[idx]
 
         return output, not_satisfied
 
-    def InitSelectorByCrc(self, crc_dist):
+
+        # if take_crc_0:
+        #     for id,dec in enumerate(self.decoders):
+        #         output_t, not_satisfied = dec(rx)
+        #         words = output_t[-1]
+        #         decoded_words = llr_to_bits(words)
+        #         crc_vals = crc.crc2int(crc.crc_check(decoded_words, CONFIG.crc_order))
+        #         idx = (crc_vals == 0).flatten("F")
+        #         output[idx] = words[idx]
+        #         if id == 0:
+        #             output = words # in case all decoders mistaken take the output from 1 of them, TODO think which one to take
+        #     return output, not_satisfied
+        #
+        # for i in range(len(self.decoders_mask)):
+        #     self.decoders_mask[i] = torch.zeros((rx.size(0), rx.size(0)), device=rx.device)
+        # output_t, not_satisfied = self.decoders[0](rx)
+        # decoded_words = llr_to_bits(output_t[-1])
+        # pred_crc = crc.crc_check(decoded_words, CONFIG.crc_order)
+        # crc_vals = crc.crc2int(pred_crc)
+        # for idx, val in enumerate(crc_vals):
+        #     dec_id = self.selector(val)
+        #     self.decoders_mask[dec_id][idx,idx] = 1 # this will mask words from decoders with crc not in range
+        #
+        # for id,dec in enumerate(self.decoders):
+        #     if id != 0: # decoder number 0 already decoded for crc value
+        #         output_t, not_satisfied = dec(rx)
+        #     output += torch.matmul(self.decoders_mask[id],output_t[-1]) # taking the last iteration
+        #     # print(f'dec number {id} got {torch.tensor.sum(self.decoders_mask[id])} / {rx.size(0)} words to decode')
+        #
+        # return output, not_satisfied
+
+    def InitSelectorByCrc(self):
         vals = 2**self.crc_order
-        if crc_dist == 'uniform':
+        if self.crc_dist == 'uniform':
             self.selector = lambda x : 0 if x == 0 else 1 + int((x-1)*self.num_of_decoders/vals)
         else:
-            print(f'crc dist choice: {crc_dist} is not yet implemented')
+            print(f'crc dist choice: {self.crc_dist} is not yet implemented')
             raise ValueError
+
+    def getDecodersMask(self, crc_bin):
+        if self.crc_dist == 'uniform':
+            whole = (self.num_of_decoders+1)//2
+            res = (self.num_of_decoders+1)%2
+            mask_size = whole + res
+            msb_bits = self.num_of_decoders//2 + self.num_of_decoders%2
+            mask = crc.addBin(crc_bin[:,0:msb_bits],1)
+            zeros = (torch.sum(crc_bin, dim=1) == 0).view(-1)
+            mask[zeros] = torch.zeros((1,mask_size))
+        else:
+            print(f'crc dist choice: {self.crc_dist} is not yet implemented')
+            raise ValueError
+        return mask
