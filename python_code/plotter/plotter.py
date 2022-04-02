@@ -38,6 +38,8 @@ class Plotter:
         else:
             # otherwise - run again
             print("calculating fresh")
+            if self.type == 'CRCPASS':
+                return self.plot_crc_passrate(dec)
             if isinstance(dec, EnsembleTrainer):
                 ber_total, fer_total = dec.evaluate(take_crc_0=take_crc_0)
             else:
@@ -63,6 +65,11 @@ class Plotter:
             dec = EnsembleTrainer()
         else:
             dec = PolarFGTrainer()
+
+        if self.type == 'CRCPASS':
+            self.plot_crc_passrate(dec)
+            return
+
         fer = self.get_fer_plot(dec, graph_params['label'], take_crc_0=take_crc_0)
         plt.plot(val_SNRs, fer,
                  label=graph_params['label'],
@@ -93,7 +100,7 @@ class Plotter:
         plt.xlim((val_SNRs[0] - 0.5, val_SNRs[-1] + 0.5))
 
 
-    def get_crc_plot(self, dec: Trainer, method_name: str):
+    def get_crc_plot(self, dec: Trainer, method_name: str, type=None):
         print(method_name)
         # set the path to saved plot results for a single method (so we do not need to run anew each time)
         if not os.path.exists(PLOTS_DIR):
@@ -109,13 +116,13 @@ class Plotter:
         else:
             # otherwise - run again
             print("calculating fresh")
-            actual_crc_dist, pred_crc_dist = dec.evaluate_crc()
+            actual_crc_dist, pred_crc_dist = dec.evaluate_crc_distribution(type=type)
             to_save_dict = {'actual_crc': actual_crc_dist, 'pred_crc': pred_crc_dist}
             save_pkl(plots_path, to_save_dict)
             graph = to_save_dict[self.type]
         return graph
 
-    def plot_crc(self, graph_params, config_params):
+    def plot_crc(self, graph_params, config_params, type=None):
         if config_params["load_weights"]:
             plot_config_path = os.path.join(WEIGHTS_DIR,config_params["run_name"]+"\\config.yaml")
             CONFIG.load_config(plot_config_path)
@@ -126,18 +133,28 @@ class Plotter:
             CONFIG.set_value(k, v)
         val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
         dec = PolarFGTrainer()
-        crc = self.get_crc_plot(dec, graph_params['label'])
-        bins = graph_params['bins']
+        crc = self.get_crc_plot(dec, graph_params['label'], type=type)
+        bins = 5
+        if 'bins' in graph_params.keys():
+            bins = graph_params['bins']
+        max_val = 2**CONFIG.crc_order
         step = int(2**CONFIG.crc_order/bins)
-        crc_vals = np.linspace(0, 2**CONFIG.crc_order-1, num=2**CONFIG.crc_order)
+        if type == 'sum':
+            step = 1
+            max_val = CONFIG.crc_order + 1
+
+        crc_vals = np.linspace(0, stop=max_val, num=(max_val+1))
         for j,snr in enumerate(val_SNRs):
             plt.figure(num=j)
             crc_tmp = crc[j]
             crc_vals = crc_vals.reshape(np.shape(crc_tmp))
             crc_counts = np.zeros(np.shape(crc_vals))
-            for i in range(1,crc_vals.size):
-                crc_counts[1+step*int(np.floor(i/step))] += crc_tmp[i]
-            plt.bar(crc_vals[1:], crc_counts[1:], width=50)
+            if step != 1:
+                for i in range(1,crc_vals.size):
+                    crc_counts[1+step*int(np.floor(i/step))] += crc_tmp[i]
+            else:
+                crc_counts = crc_tmp
+            plt.bar(crc_vals[1:], crc_counts[1:], width=0.5)
             plt.title(f'{self.type} Comparison @ snr: {snr}')
             plt.yscale('log')
             plt.xlabel("crc val")
@@ -145,28 +162,69 @@ class Plotter:
             plt.legend(loc='lower left', prop={'size': 15})
             plt.xlim((crc_vals[0] - 10, crc_vals[-1] + 2))
 
+    def plot_crc_passrate(self, dec):
+    # TODO save graph then loads them
+        colors = ['orange','blue','green','red','black']
+        labels = ['dec 1', 'dec 2', 'dec 3', 'dec 4','designated failed, current not']
+        align = [-0.2,-0.1,0,0.1,0.2]
+        CONFIG.set_value('test_errors', 5e3)
+        dec.model.keep_crc_passrate = True
+        dec.model.generateCRCpassrateDict()
+        fer,ber = dec.evaluate()
+        crc_passrate = dec.model.crc_passrate
+        bins = np.array(range(1,len(crc_passrate)))
+        plt.figure()
+
+        plt.bar(0.3, 0, width=0.1, color=colors[-1], label=labels[-1]) # lazy label
+        for dec_id,res in crc_passrate.items():
+            if dec_id == 0:
+                continue
+            x = res[1:,0] # don't care about the BP
+            y = res[1:,1]
+            # x = np.array([crc_passrate[i][dec_id][0] for i in range(1,len(crc_passrate))]) # transposed plot
+            # y = np.array([crc_passrate[i][dec_id][1] for i in range(1,len(crc_passrate))])
+            plt.bar(bins+align[dec_id], x+y, width=0.1, color=colors[-1])
+            plt.bar(bins+align[dec_id], x, width=0.1, color=colors[dec_id-1], label=labels[dec_id-1])
+
+        plt.title(f"passed CRC @ snr: {config_plot_params['val_SNR_start']}")
+        plt.xlabel("CRC range id")
+        plt.ylabel('counts')
+        plt.legend(loc='lower left', prop={'size': 15})
+
 if __name__ == '__main__':
 
     ''' 64 32 '''
     plotter = Plotter(run_over=False, type='FER')
     plotter.plot(*get_polar_64_32(),dec_type='FG')
     plotter.plot(*get_weighted_polar_64_32_iter6_crc11(),dec_type='FG')
+    #
     plotter.plot(*get_ensemble_64_32_iter6_crc11(),dec_type='Ensemble')
+    # plotter.plot(*get_ensemble_64_32_iter6_crc11_best_dec(),dec_type='Ensemble', take_crc_0=True)
+    #
+    # plotter.plot(*get_weighted_polar_64_32_crc11_iter30(),dec_type='FG')
 
-    plotter = Plotter(run_over=True, type='FER')
-    plotter.plot(*get_ensemble_64_32_iter6_crc11_best_dec(),dec_type='Ensemble', take_crc_0=True)
+    # plotter.plot(*get_ensemble_64_32_iter6_crc11_sum(),dec_type='Ensemble')
+    #
+    # plotter = Plotter(run_over=True, type='FER')
+    plotter.plot(*get_ensemble_64_32_iter6_crc11_sum_mod(),dec_type='Ensemble')
 
     ''' 256 128 '''
-    # plotter = Plotter(run_over=False, type='FER')
+    # plotter = Plotter(run_over=False, type='BER')
     # plotter.plot(*get_polar_256_128())
     # plotter.plot(*get_weighted_polar_256_128_crc11_iter6())
+    #
     # plotter.plot(*get_ensemble_256_128_crc11_iter6(),dec_type='Ensemble')
-    # plotter = Plotter(run_over=True, type='FER')
     # plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec(),dec_type='Ensemble', take_crc_0=True)
+    #
+    # plotter.plot(*get_weighted_polar_256_128_crc11_iter30())
 
+    ''' CRC '''
+    # plotter = Plotter(run_over=True, type='CRCPASS')
+    # plotter.plot(*get_ensemble_64_32_iter6_crc11_sum_mod(),dec_type='Ensemble')
 
-
-
+    ''' CRC dist '''
+    # plotter = Plotter(run_over=True, type='pred_crc')
+    # plotter.plot_crc(*get_polar_64_32(), type='sum')
 
 
 

@@ -3,11 +3,11 @@ code_type: Polar
 code_len: 64
 info_len: 32
 clipping_val: 20
-iteration_num: 5
+iteration_num: 6
 early_stopping: True
 design_SNR: 0.6
 ensemble_dec_num: 4
-ensemble_crc_dist: 'uniform'
+ensemble_crc_dist: 'sum'
 
 # data params
 val_batch_size: 10000
@@ -20,14 +20,14 @@ test_errors: 500
 crc_order: 11
 
 # nn training
-run_name: 'wfg_64_32_crc11_iter5'
+run_name: ''
 load_weights: False
 lr: 0.01
 optimizer_type: 'ADAM'
 criterion_type: 'BCE'
-num_of_epochs: 50
+num_of_epochs: 150
 validation_epochs: 5
-train_minibatch_size: 500
+train_minibatch_size: 1000
 train_SNR_start: 1.25
 train_SNR_end: 4.25
 train_num_SNR: 4

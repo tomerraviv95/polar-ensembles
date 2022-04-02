@@ -17,6 +17,10 @@ class EnsembleTrainer(Trainer):
     """
     # TODO: check if need to implement different save weights
     def __init__(self):
+        run_name = CONFIG.run_name
+        if not(run_name):
+            run_name = f"ensemble_{CONFIG.code_len}_{CONFIG.info_len}_iters{CONFIG.iteration_num}_crc{CONFIG.crc_order}_{CONFIG.ensemble_crc_dist}"
+        CONFIG.set_value('run_name',run_name)
         super().__init__()
 
     def load_model(self):
@@ -63,7 +67,7 @@ class EnsembleTrainer(Trainer):
                 ber_total[j] /= snr_test_size
                 fer_total[j] /= snr_test_size
                 print(
-                    f'done. time: {time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}')
+                    f'done. time: {time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}, tot errors: {err_count}')
             return ber_total, fer_total
 
     def single_eval(self, j, take_crc_0=False):
@@ -77,6 +81,7 @@ class EnsembleTrainer(Trainer):
         decoded_words = self.decode(output)
 
         return calculate_accuracy(decoded_words, target_per_snr, DEVICE)
+
 
 if __name__ == "__main__":
     # load config and run evaluation of decoder

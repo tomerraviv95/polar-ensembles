@@ -88,12 +88,15 @@ def crc_check(data,order):
 
 def crc2int(crc : np.array):
     batch_size = np.shape(crc)[0]
+    if len(np.shape(crc)) <= 1:
+        batch_size = 1
+        crc = [crc]
     crc_val = np.zeros((batch_size,1)).astype(int)
     for row in range(batch_size):
         crc_val[row] = int("".join(str(int(x)) for x in crc[row]),2)
     return crc_val.flatten('F')
 
-def addBin(arr, val):
+def addBin(arr, val : int):
     ''' Binary addition of val to each element of arr
         arr dim is: (idx,binary values)'''
     to_tensor = False
@@ -120,6 +123,21 @@ def addBin(arr, val):
     if to_tensor:
         res = torch.Tensor(res)
     return res
+
+def sumBits(arr):
+    ''' sum all bits in binary array
+        arr dim is: (idx,binary values) '''
+    to_tensor = False
+    if not(isinstance(arr,np.ndarray)):
+        arr = arr.cpu().detach().numpy()
+        to_tensor = True
+    s = np.shape(arr)
+    ax = len(s) - 1
+    res = np.sum(arr,axis=ax, dtype=int)
+    if to_tensor:
+        res = torch.Tensor(res)
+    return res
+
 
 if __name__ == "__main__":
     arr = np.array([[1,0,1],[0,0,1]])

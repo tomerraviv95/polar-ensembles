@@ -12,6 +12,10 @@ class PolarFGTrainer(Trainer):
     """
 
     def __init__(self):
+        run_name = CONFIG.run_name
+        if not(run_name):
+            run_name = f"wfg_{CONFIG.code_len}_{CONFIG.info_len}_iters{CONFIG.iteration_num}_crc{CONFIG.crc_order}"
+        CONFIG.set_value('run_name',run_name)
         super().__init__()
 
     def load_model(self):
