@@ -19,7 +19,7 @@ class EnsembleTrainer(Trainer):
     def __init__(self):
         run_name = CONFIG.run_name
         if not(run_name):
-            run_name = f"ensemble_{CONFIG.code_len}_{CONFIG.info_len}_iters{CONFIG.iteration_num}_crc{CONFIG.crc_order}_{CONFIG.ensemble_crc_dist}"
+            run_name = f"ensemble_{CONFIG.code_len}_{CONFIG.info_len}_iters{CONFIG.iteration_num}_crc{CONFIG.crc_order}_{CONFIG.ensemble_crc_dist}_decs_{CONFIG.ensemble_dec_num}"
         CONFIG.set_value('run_name',run_name)
         super().__init__()
 

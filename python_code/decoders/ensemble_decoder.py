@@ -128,7 +128,7 @@ class EnsembleDecoder(Decoder):
             mask[zeros] = torch.zeros((1,mask_size))
             mask = crc.crc2int(mask)
         elif self.crc_dist == 'sum':
-            max_val = self.crc_order + 1
+            max_val = self.crc_order if (self.crc_order%2 == 0) else self.crc_order+1 # result for crc bits are the same as order, even number for convinient
             vals = crc.sumBits(crc_bin)
             one = torch.ones(np.shape(vals))
             mask = one + (vals-one)//(max_val/self.num_of_decoders)
@@ -136,7 +136,7 @@ class EnsembleDecoder(Decoder):
             mask = mask.cpu().detach().numpy().astype(dtype=int)
 
 
-            mask = np.remainder(vals,4) + 1 # use remainder of sum
+            mask = np.remainder(vals,mask_size) + 1 # use remainder of sum
             mask[zeros] = 0
             mask = mask.cpu().detach().numpy().astype(dtype=int)
             # v = vals.cpu().detach().numpy()
