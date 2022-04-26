@@ -27,6 +27,7 @@ class EnsembleDecoder(Decoder):
         self._build_model()
         self.generateCRCpassrateDict()
         self.keep_crc_passrate = False
+        print(f"num of parameters per decoder: {self.get_num_parameters_per_decoder()}")
 
     def _build_model(self):
         # define layers
@@ -145,3 +146,11 @@ class EnsembleDecoder(Decoder):
             print(f'crc dist choice: {self.crc_dist} is not yet implemented')
             raise ValueError
         return mask
+
+    def get_num_parameters_per_decoder(self):
+        total_params = 0
+        for name, parameter in self.named_parameters():
+            if not parameter.requires_grad: continue
+            params = parameter.numel()
+            total_params += params
+        return total_params
