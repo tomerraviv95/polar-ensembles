@@ -43,7 +43,7 @@ class EnsembleDecoder(Decoder):
             self.crc_passrate[dec_id] = np.zeros((self.num_of_decoders+1,3))
 
     def trackCRCpassrate(self, crc_vals_dict, dec_mask):
-        '''save the crc passrate for each decoder. array of [pass count of designated and curr, pass count of designated and not curr , total]'''
+        '''save the crc passrate for each decoder. array of [pass count of designated and curr, pass count of curr and not designated , total]'''
         if not self.keep_crc_passrate:
             return
         for dec_id,dec in enumerate(self.decoders):
