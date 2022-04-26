@@ -58,7 +58,7 @@ class EnsembleDecoder(Decoder):
                 if (val == 0) and designated_dec_pass:
                     self.crc_passrate[dec_id][crc_bin][0] += 1 # curr decoder and designated one success
                 elif (val == 0) and not(designated_dec_pass):
-                    self.crc_passrate[dec_id][crc_bin][1] += 1 # keep track if the designated decoder succeed in this word and curr failed
+                    self.crc_passrate[dec_id][crc_bin][1] += 1 # keep track if the curr decoder succeed in this word and designated failed
                 self.crc_passrate[dec_id][crc_bin][2] += 1
 
     def forward(self, rx: torch.Tensor, take_crc_0=False):
