@@ -132,3 +132,5 @@ dmypy.json
 results
 results/weights
 results/plots
+*.pt
+*.pkl
