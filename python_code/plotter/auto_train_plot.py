@@ -64,6 +64,7 @@ def get_ensemble_polar_1024_512_crc11_iter5_decs_8():
 
 def TrainDecs(decs_to_train):
     trained = []
+    CONFIG.set_value('run_name', '')
     # Train the decoders
     for dec_name in decs_to_train:
         graph_params, runs_params, script_params = dec_name()
@@ -161,11 +162,5 @@ if __name__ == '__main__':
     dec_trained_params = TrainDecs(decs_to_train_and_plot)
 
     PlotDecs(decs_to_load_plot, decs_to_plot_only, dec_trained_params, plot_type="FER")
-    # decs_to_train = [] #[get_weighted_polar_256_128_crc11_iter5,get_ensemble_256_128_crc11_iter5] # decoder to train
-    # decs_to_plot = [get_weighted_polar_256_128_crc11_iter5,get_ensemble_256_128_crc11_iter5, get_polar_256_128] # decoders only plot
-    # decs_to_load_plot = [] # decoders only to load exsiting plot
-    #
-    # dec_trained_params = TrainDecs(decs_to_train)
-    #
-    # PlotDecs(decs_to_load_plot, decs_to_plot, dec_trained_params, plot_type="FER")
+
 
