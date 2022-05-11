@@ -1,3 +1,5 @@
+from dir_definitions import WEIGHTS_DIR, CONFIG_PATH
+from shutil import copyfile
 from python_code.utils.python_utils import llr_to_bits
 from python_code.utils.evaluation_criterion import calculate_accuracy
 from python_code.trainers.fg_trainer import PolarFGTrainer
@@ -7,6 +9,7 @@ from globals import CONFIG, DEVICE
 from time import time
 import numpy as np
 import torch
+import os
 
 EARLY_TERMINATION = True
 
@@ -141,6 +144,90 @@ class EnsembleTrainer(Trainer):
 
         return ber, fer, err_counts, words_per_decoder
 
+    def train(self):
+        self.optimization_setup()
+        self.loss_setup()
+        snr_range = self.snr_range['train']
+        self.evaluate_train()
+        dec_num = self.model.num_of_decoders
+        ber_total, fer_total, best_ber = np.ones(dec_num), np.ones(dec_num), np.ones(dec_num)
+        early_stopping_bers = []
+        for epoch in range(1, CONFIG.num_of_epochs + 1):
+            print(f'Epoch {epoch}')
+            for j, snr in enumerate(snr_range):
+                # draw train data
+                rx_per_snr, target_per_snr = iter(self.channel_dataset['train'][j])
+                rx_per_snr = rx_per_snr.to(device=DEVICE)
+                target_per_snr = target_per_snr.to(device=DEVICE)
+
+                prediction = self.model(rx_per_snr)
+
+                # calculate loss
+                loss = self.calc_loss(prediction=prediction, labels=target_per_snr)
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+
+            if epoch % (CONFIG.validation_epochs) == 0:
+                prev_ber_total = ber_total
+                ber_total, fer_total = self.evaluate_train()
+                # extract relevant ber, either scalar or last value in list
+                if ber_total.shape[0] != 1:
+                    raise ValueError('Must run training with single eval SNR!!!')
+
+                for dec_idx in range(dec_num):
+                    decoder_id = dec_idx + 1
+                    ber = ber_total[0,dec_idx]
+                    fer = fer_total[0,dec_idx]
+
+                    # save weights if model is improved compared to best ber
+                    if ber < best_ber[dec_idx]:
+                        self.save_weights(epoch, decoder_id)
+                        best_ber[dec_idx] = ber
+
+        return ber_total, fer_total
+
+    def setup_save_dir(self):
+        self.weights_dir = os.path.join(WEIGHTS_DIR, CONFIG.run_name)
+        if not os.path.exists(self.weights_dir):
+            os.makedirs(self.weights_dir)
+            # save config in output dir
+            copyfile(CONFIG_PATH, os.path.join(self.weights_dir, "config.yaml"))
+        for dec_id,dec in enumerate(self.model.decoders):
+            if dec_id == 0:
+                continue
+            folder = os.path.join(self.weights_dir, str(dec_id))
+            if not os.path.exists(folder):
+                os.makedirs(folder)
+
+
+    def save_weights(self, epoch, decoder_id):
+        torch.save({'model_state_dict': self.model.decoders[decoder_id].state_dict(),
+                    'optimizer_state_dict': self.optimizer.state_dict(),
+                    'epoch': epoch},
+                   os.path.join(self.weights_dir, f'{decoder_id}\\epoch_{epoch}.pt'))
+
+    def load_weights(self):
+        """
+        Loads detector's weights defined by the [snr,gamma] from checkpoint, if exists
+        """
+        for dec_id,dec in enumerate(self.model.decoders):
+            folder = os.path.join(self.weights_dir, str(dec_id))
+            if os.path.isdir(folder):
+                files = os.listdir(folder)
+                names = []
+                for file in files:
+                    if file.startswith("epoch_"):
+                        names.append(int(file.split('.')[0].split('_')[1]))
+                names.sort()
+                print(f'loading model from epoch {names[-1]}')
+                checkpoint = torch.load(os.path.join(folder, 'epoch_' + str(names[-1]) + '.pt'))
+                try:
+                    dec.load_state_dict(checkpoint['model_state_dict'])
+                except Exception:
+                    raise ValueError("Wrong run directory!!!")
+            else:
+                print(f'No such dir!!! starting from scratch')
 
 if __name__ == "__main__":
     # load config and run evaluation of decoder

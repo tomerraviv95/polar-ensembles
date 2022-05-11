@@ -63,7 +63,7 @@ class Plotter:
             if self.type == 'CRCPASS':
                 return self.plot_crc_passrate(dec)
             if isinstance(dec, EnsembleTrainer):
-                ber_total, fer_total = dec.evaluate(take_crc_0=take_crc_0)
+                ber_total, fer_total = dec.evaluate_test(take_crc_0=take_crc_0)
             else:
                 ber_total, fer_total = dec.evaluate()
             to_save_dict = {'BER': ber_total, 'FER': fer_total}
@@ -212,7 +212,7 @@ class Plotter:
             plt.bar(bins+align[dec_id], x+y, width=0.1, color=colors[-1])
             plt.bar(bins+align[dec_id], x, width=0.1, color=colors[dec_id-1], label=labels[dec_id-1])
 
-        plt.title(f"passed CRC @ snr: {config_plot_params['val_SNR_start']}")
+        plt.title(f"passed CRC @ snr: {config_plot_params['val_SNR_start']} \n {CONFIG.run_name}")
         plt.xlabel("CRC range id")
         plt.ylabel('counts')
         plt.legend(loc='lower left', prop={'size': 15})
@@ -254,20 +254,30 @@ if __name__ == '__main__':
 
 
     ''' 64 32 '''
-    '''
-    plotter = Plotter(run_over=False, type='BER')
-    plotter.plot(*get_polar_256_128(),dec_type='FG')
-    plotter.plot(*get_weighted_polar_256_128_crc11_iter6(),dec_type='FG')
+    # plotter = Plotter(run_over=False, type='BER')
+    # plotter.plot(*get_polar_64_32(),dec_type='FG')
+    # plotter.plot(*get_weighted_polar_64_32_iter5_crc11(),dec_type='FG')
+    # plotter.plot(*get_new_ensemble_64_32_iters5_crc11_sum_decs_4(),dec_type='Ensemble')
+    # plotter.plot(*get_new_ensemble_64_32_iters5_crc11_sum_decs_4_best_dec(),dec_type='Ensemble', take_crc_0=True)
+    # #
+
+    # #
+    # # plotter.plot(*get_weighted_polar_64_32_crc11_iter30(),dec_type='FG')
+    #
+    # # plotter.plot(*get_ensemble_64_32_iter6_crc11_sum(),dec_type='Ensemble')
+    # #
+    # # plotter = Plotter(run_over=True, type='FER')
+    # plotter.plot(*get_ensemble_64_32_iter6_crc11_sum_mod(),dec_type='Ensemble')
 
     # plotter = Plotter(run_over=True, type='FER')
-    plotter.plot(*get_ensemble_256_128_crc11_iter6_dec2(), dec_type='Ensemble')
-    plotter.plot(*get_ensemble_256_128_crc11_iter6(),dec_type='Ensemble')
-    plotter.plot(*get_ensemble_256_128_crc11_iter6_dec8(), dec_type='Ensemble')
-    plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec2(), dec_type='Ensemble', take_crc_0=True)
-    plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec(),dec_type='Ensemble', take_crc_0=True)
-    plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec8(), dec_type='Ensemble', take_crc_0=True)
+    # plotter.plot(*get_ensemble_256_128_crc11_iter6_dec2(), dec_type='Ensemble')
+    # plotter.plot(*get_ensemble_256_128_crc11_iter6(),dec_type='Ensemble')
+    # plotter.plot(*get_ensemble_256_128_crc11_iter6_dec8(), dec_type='Ensemble')
+    # plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec2(), dec_type='Ensemble', take_crc_0=True)
+    # plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec(),dec_type='Ensemble', take_crc_0=True)
+    # plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec8(), dec_type='Ensemble', take_crc_0=True)
     #plotter.plot(*get_weighted_polar_128_64_crc11_iter24(), dec_type='FG')
-    '''
+   
     ''' 256 128 '''
     # plotter = Plotter(run_over=False, type='FER')
     # plotter.plot(*get_polar_256_128())
@@ -276,12 +286,32 @@ if __name__ == '__main__':
     # plotter = Plotter(run_over=True, type='FER')
     # plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec(),dec_type='Ensemble', take_crc_0=True)
 
+    ''' 512 256 '''
+    # plotter = Plotter(run_over=False, type='BER')
+    # plotter.plot(*get_polar_512_256())
+    # plotter.plot(*get_wfg_512_256_iters5_crc11())
+    # plotter.plot(*get_ensemble_512_256_iters5_crc11_sum_decs_2(),dec_type='Ensemble')
+    # plotter.plot(*get_ensemble_512_256_iters5_crc11_sum_decs_4(),dec_type='Ensemble')
+    # plotter.plot(*get_ensemble_512_256_iters5_crc11_sum_decs_6(),dec_type='Ensemble')
+    # plotter.plot(*get_ensemble_512_256_iters5_crc11_sum_decs_2_best(),dec_type='Ensemble', take_crc_0=True)
+    # plotter.plot(*get_ensemble_512_256_iters5_crc11_sum_decs_4_best(),dec_type='Ensemble', take_crc_0=True)
+    # plotter.plot(*get_ensemble_512_256_iters5_crc11_sum_decs_6_best(),dec_type='Ensemble', take_crc_0=True)
+
+    # plotter = Plotter(run_over=True, type='FER')
+
+    ''' 1024 512 '''
+    # plotter = Plotter(run_over=False, type='FER')
+    #
+    # plotter = Plotter(run_over=True, type='FER')
+    # plotter.plot(*get_polar_1024_512())
+    # plotter.plot(*get_wfg_1024_512_iters5_crc11())
+    # plotter.plot(*get_ensemble_1024_512_iters5_crc11_sum_decs_4(),dec_type='Ensemble')
+    # plotter.plot(*get_ensemble_1024_512_iters5_crc11_sum_decs_4_best(),dec_type='Ensemble', take_crc_0=True)
+
+
     ''' CRC '''
-    #plotter = Plotter(run_over=True, type='JAACARD')
-    #plotter.plot(*get_ensemble_64_32_crc11_iter6(),dec_type='Ensemble')
-    plotter = Plotter(run_over=False, type='FER')
-    plotter.plot(*get_polar_64_32(), dec_type='FG')
-    print(get_flops_num(*get_polar_64_32(), 4))
+    # plotter = Plotter(run_over=True, type='CRCPASS')
+    # plotter.plot(*get_ensemble_512_256_iters5_crc11_sum_decs_6(),dec_type='Ensemble')
 
     ''' CRC dist '''
     # plotter = Plotter(run_over=True, type='pred_crc')
