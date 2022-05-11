@@ -62,7 +62,7 @@ class EnsembleDecoder(Decoder):
                     self.crc_passrate[dec_id][crc_bin][1] += 1 # keep track if the curr decoder succeed in this word and designated failed
                 self.crc_passrate[dec_id][crc_bin][2] += 1
 
-    def forward(self, rx: torch.Tensor, take_crc_0=False):
+    def forward(self, rx: torch.Tensor, take_crc_0=False, get_mask=False):
         """
         compute forward pass in the network
         :param rx: [batch_size,N]
@@ -104,6 +104,8 @@ class EnsembleDecoder(Decoder):
                     crc_vals = crc.crc2int(crc.crc_check(llr_to_bits(words), self.crc_order))
                     crc_vals_dict[dec_id] = crc_vals.copy()
             self.trackCRCpassrate(crc_vals_dict=crc_vals_dict, dec_mask=np_dec_mask)
+        if get_mask:
+            return output, not_satisfied, np_dec_mask
         return output, not_satisfied
 
 

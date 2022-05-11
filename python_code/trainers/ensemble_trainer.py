@@ -42,7 +42,7 @@ class EnsembleTrainer(Trainer):
     def decode(self, soft_values):
         return llr_to_bits(soft_values)
 
-    def evaluate(self,take_crc_0=False):
+    def evaluate_test(self,take_crc_0=False):
         """
         Evaluation is done at every SNR until a specific number of decoding errors occur
         This ensures more stability at each point, than another method which simply simulates X points at every SNR
@@ -58,7 +58,7 @@ class EnsembleTrainer(Trainer):
                 print('start eval snr ' + str(snr))
                 start = time()
                 while err_count < CONFIG.test_errors:
-                    ber, fer, err_indices = self.single_eval(j, take_crc_0=take_crc_0)
+                    ber, fer, err_indices = self.single_eval_test(j, take_crc_0=take_crc_0)
                     ber_total[j] += ber
                     fer_total[j] += fer
                     err_count += err_indices.shape[0]
@@ -70,7 +70,7 @@ class EnsembleTrainer(Trainer):
                     f'done. time: {time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}, tot errors: {err_count}')
             return ber_total, fer_total
 
-    def single_eval(self, j, take_crc_0=False):
+    def single_eval_test(self, j, take_crc_0=False):
         # draw test data
         rx_per_snr, target_per_snr = iter(self.channel_dataset['val'][j])
         rx_per_snr = rx_per_snr.to(device=DEVICE)
@@ -81,6 +81,65 @@ class EnsembleTrainer(Trainer):
         decoded_words = self.decode(output)
 
         return calculate_accuracy(decoded_words, target_per_snr, DEVICE)
+
+
+    def evaluate_train(self, take_crc_0=False):
+        """
+        Evaluation is done at every SNR until a specific number of decoding errors occur
+        This ensures more stability at each point, than another method which simply simulates X points at every SNR
+        :return: BER and FER vectors
+        """
+        dec_num = self.model.num_of_decoders
+        snr_range = self.snr_range['val']
+        ber_total, fer_total = np.zeros((len(snr_range), dec_num)), np.zeros((len(snr_range), dec_num))
+        err_total = np.zeros(dec_num)
+
+        with torch.no_grad():
+            for j, snr in enumerate(snr_range):
+                total_words_per_decoder = np.zeros(dec_num)
+                print('start eval snr ' + str(snr))
+                start = time()
+                while min(err_total) < CONFIG.test_errors:
+                    ber, fer, err_counts, words_per_decoder = self.single_eval_train(j, take_crc_0=take_crc_0)
+                    ber_total[j] += ber*words_per_decoder # element wise
+                    fer_total[j] += fer*words_per_decoder
+                    err_total += err_counts
+                    total_words_per_decoder += words_per_decoder
+
+                ber_total[j] /= total_words_per_decoder
+                fer_total[j] /= total_words_per_decoder
+                print(
+                    f'done. time: {time() - start}, ber: {ber_total[j]}, fer: {fer_total[j]}, log-ber:{-np.log(ber_total[j])}, tot errors: {err_total}')
+            return ber_total, fer_total
+
+    def single_eval_train(self, j, take_crc_0=False):
+        # draw test data
+        rx_per_snr, target_per_snr = iter(self.channel_dataset['val'][j])
+        rx_per_snr = rx_per_snr.to(device=DEVICE)
+        target_per_snr = target_per_snr.to(device=DEVICE)
+
+        dec_num = self.model.num_of_decoders
+        ber = np.zeros(dec_num)
+        fer = np.zeros(dec_num)
+        err_counts = np.zeros(dec_num)
+        words_per_decoder = np.zeros(dec_num)
+
+        # decode and calculate accuracy per decoder
+        output, not_satisfied_list, dec_mask = self.model(rx_per_snr, take_crc_0=take_crc_0, get_mask=True)
+        decoded_words = self.decode(output)
+
+        for dec_idx in range(dec_num):
+            decoder_id = dec_idx + 1
+            idx = (dec_mask == decoder_id).flatten("F")
+            words_per_decoder[dec_idx] = np.sum(idx)
+            if words_per_decoder[dec_idx] == 0:
+                continue # dont take into account if decoder hasn't been used
+            curr_decoded_words = decoded_words[idx]
+            curr_target = target_per_snr[idx]
+            ber[dec_idx], fer[dec_idx], err_indices = calculate_accuracy(curr_decoded_words, curr_target, DEVICE)
+            err_counts[dec_idx] = err_indices.shape[0]
+
+        return ber, fer, err_counts, words_per_decoder
 
 
 if __name__ == "__main__":
