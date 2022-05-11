@@ -17,6 +17,28 @@ config_plot_params = {'val_SNR_start' : 1,
                       'test_errors' : 500
                 }
 
+
+def get_flops_num(graph_params, config_params, num_of_decoders):
+    for k, v in config_params.items():
+        CONFIG.set_value(k, v)
+    if not os.path.exists(PLOTS_DIR):
+        os.makedirs(PLOTS_DIR)
+    file_name = ''.join(graph_params['label'])
+    plots_path = os.path.join(PLOTS_DIR, file_name + '.pkl')
+    print(plots_path)
+    saved_dict = load_pkl(plots_path)
+    BP_fer = saved_dict['FER']
+    total_params = 0
+
+    dec = PolarFGTrainer()
+    for name, parameter in dec.model.named_parameters():
+        if not parameter.requires_grad: continue
+        params = parameter.numel()
+        total_params += params
+
+    return total_params * (BP_fer * num_of_decoders + 1)
+
+
 class Plotter:
     def __init__(self, run_over, type):
         self.run_over = run_over
@@ -68,6 +90,10 @@ class Plotter:
 
         if self.type == 'CRCPASS':
             self.plot_crc_passrate(dec)
+            return
+
+        if self.type == 'JAACARD':
+            self.plot_crc_jaacard(dec)
             return
 
         fer = self.get_fer_plot(dec, graph_params['label'], take_crc_0=take_crc_0)
@@ -191,36 +217,71 @@ class Plotter:
         plt.ylabel('counts')
         plt.legend(loc='lower left', prop={'size': 15})
 
+
+    def plot_crc_jaacard(self, dec):
+    # TODO save graph then loads them
+        colors = ['orange','blue','green','red']
+        labels = ['dec 1', 'dec 2', 'dec 3', 'dec 4']
+        align = [-0.2,-0.1,0,0.1,0.2]
+        CONFIG.set_value('test_errors', 5e3)
+        dec.model.keep_crc_passrate = True
+        dec.model.generateCRCpassrateDict()
+        fer,ber = dec.evaluate()
+        crc_passrate = dec.model.crc_passrate
+        bins = np.array(range(1,len(crc_passrate)))
+        plt.figure()
+
+        plt.bar(0.3, 0, width=0.1, color=colors[-1], label=labels[-1]) # lazy label
+        B = np.zeros(dec.model.num_of_decoders)
+        for dec_id, res in crc_passrate.items():
+            if dec_id == 0:
+                continue
+            B[dec_id-1] = res[dec_id,0]
+        for dec_id,res in crc_passrate.items():
+            if dec_id == 0:
+                continue
+            A_B_intersection = res[1:,0] # don't care about the BP
+            A_without_B = res[1:,1]
+            jaacard = A_B_intersection/(A_without_B+B)
+            plt.bar(bins+align[dec_id],jaacard,  width=0.1, color=colors[dec_id-1], label=labels[dec_id-1])
+
+        plt.title(f"passed CRC @ snr: {config_plot_params['val_SNR_start']}")
+        plt.xlabel("CRC range id")
+        plt.ylabel('jaacard')
+        plt.legend(loc='lower left', prop={'size': 15})
+
 if __name__ == '__main__':
 
+
     ''' 64 32 '''
-    plotter = Plotter(run_over=False, type='FER')
-    plotter.plot(*get_polar_64_32(),dec_type='FG')
-    plotter.plot(*get_weighted_polar_64_32_iter6_crc11(),dec_type='FG')
-    #
-    plotter.plot(*get_ensemble_64_32_iter6_crc11(),dec_type='Ensemble')
-    # plotter.plot(*get_ensemble_64_32_iter6_crc11_best_dec(),dec_type='Ensemble', take_crc_0=True)
-    #
-    # plotter.plot(*get_weighted_polar_64_32_crc11_iter30(),dec_type='FG')
+    '''
+    plotter = Plotter(run_over=False, type='BER')
+    plotter.plot(*get_polar_256_128(),dec_type='FG')
+    plotter.plot(*get_weighted_polar_256_128_crc11_iter6(),dec_type='FG')
 
-    # plotter.plot(*get_ensemble_64_32_iter6_crc11_sum(),dec_type='Ensemble')
-    #
     # plotter = Plotter(run_over=True, type='FER')
-    plotter.plot(*get_ensemble_64_32_iter6_crc11_sum_mod(),dec_type='Ensemble')
-
+    plotter.plot(*get_ensemble_256_128_crc11_iter6_dec2(), dec_type='Ensemble')
+    plotter.plot(*get_ensemble_256_128_crc11_iter6(),dec_type='Ensemble')
+    plotter.plot(*get_ensemble_256_128_crc11_iter6_dec8(), dec_type='Ensemble')
+    plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec2(), dec_type='Ensemble', take_crc_0=True)
+    plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec(),dec_type='Ensemble', take_crc_0=True)
+    plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec8(), dec_type='Ensemble', take_crc_0=True)
+    #plotter.plot(*get_weighted_polar_128_64_crc11_iter24(), dec_type='FG')
+    '''
     ''' 256 128 '''
-    # plotter = Plotter(run_over=False, type='BER')
+    # plotter = Plotter(run_over=False, type='FER')
     # plotter.plot(*get_polar_256_128())
     # plotter.plot(*get_weighted_polar_256_128_crc11_iter6())
-    #
     # plotter.plot(*get_ensemble_256_128_crc11_iter6(),dec_type='Ensemble')
+    # plotter = Plotter(run_over=True, type='FER')
     # plotter.plot(*get_ensemble_256_128_crc11_iter6_best_dec(),dec_type='Ensemble', take_crc_0=True)
-    #
-    # plotter.plot(*get_weighted_polar_256_128_crc11_iter30())
 
     ''' CRC '''
-    # plotter = Plotter(run_over=True, type='CRCPASS')
-    # plotter.plot(*get_ensemble_64_32_iter6_crc11_sum_mod(),dec_type='Ensemble')
+    #plotter = Plotter(run_over=True, type='JAACARD')
+    #plotter.plot(*get_ensemble_64_32_crc11_iter6(),dec_type='Ensemble')
+    plotter = Plotter(run_over=False, type='FER')
+    plotter.plot(*get_polar_64_32(), dec_type='FG')
+    print(get_flops_num(*get_polar_64_32(), 4))
 
     ''' CRC dist '''
     # plotter = Plotter(run_over=True, type='pred_crc')
