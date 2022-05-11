@@ -218,7 +218,7 @@ class Plotter:
         plt.legend(loc='lower left', prop={'size': 15})
 
 
-    def plot_crc_jaacard(self, dec):
+    def plot_crc_jaccard(self, dec):
     # TODO save graph then loads them
         colors = ['orange','blue','green','red']
         labels = ['dec 1', 'dec 2', 'dec 3', 'dec 4']
@@ -242,12 +242,12 @@ class Plotter:
                 continue
             A_B_intersection = res[1:,0] # don't care about the BP
             A_without_B = res[1:,1]
-            jaacard = A_B_intersection/(A_without_B+B)
-            plt.bar(bins+align[dec_id],jaacard,  width=0.1, color=colors[dec_id-1], label=labels[dec_id-1])
+            jaccard = A_B_intersection/(A_without_B+B)
+            plt.bar(bins+align[dec_id],jaccard,  width=0.1, color=colors[dec_id-1], label=labels[dec_id-1])
 
         plt.title(f"passed CRC @ snr: {config_plot_params['val_SNR_start']}")
         plt.xlabel("CRC range id")
-        plt.ylabel('jaacard')
+        plt.ylabel('jaccard')
         plt.legend(loc='lower left', prop={'size': 15})
 
 if __name__ == '__main__':
