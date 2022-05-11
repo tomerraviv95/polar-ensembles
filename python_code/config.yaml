@@ -6,7 +6,7 @@ clipping_val: 20
 iteration_num: 5
 early_stopping: True
 design_SNR: 0.6
-ensemble_dec_num: 8
+ensemble_dec_num: 4
 ensemble_crc_dist: 'uniform'
 
 # data params
