@@ -212,6 +212,8 @@ class EnsembleTrainer(Trainer):
         Loads detector's weights defined by the [snr,gamma] from checkpoint, if exists
         """
         for dec_id,dec in enumerate(self.model.decoders):
+            if dec_id == 0:
+                continue # no weights for first decoder
             folder = os.path.join(self.weights_dir, str(dec_id))
             if os.path.isdir(folder):
                 files = os.listdir(folder)
