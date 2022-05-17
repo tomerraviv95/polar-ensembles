@@ -123,8 +123,9 @@ class EnsembleDecoder(Decoder):
         whole = (self.num_of_decoders+1)//2
         res = (self.num_of_decoders+1)%2
         mask_size = whole + res
-        if self.crc_dist == 'uniform':
-            msb_bits = self.num_of_decoders//2 + self.num_of_decoders%2
+        if self.crc_dist == 'uniform':# only for factors of 2
+            mask_size = int(np.log2(self.num_of_decoders)) + 1
+            msb_bits = int(np.log2(self.num_of_decoders))
             mask = crc.addBin(crc_bin[:,0:msb_bits],1)
             zeros = (torch.sum(crc_bin, dim=1) == 0).view(-1)
             mask[zeros] = torch.zeros((1,mask_size))
