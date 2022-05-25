@@ -11,6 +11,7 @@ import torch
 import time
 import os
 from python_code.codes.crc import crc
+import yaml
 
 EARLY_STOPPING_PATIENCE = 10
 SYSTEMATIC_ENCODING = False
@@ -73,7 +74,10 @@ class Trainer(object):
         if not os.path.exists(self.weights_dir):
             os.makedirs(self.weights_dir)
             # save config in output dir
-            copyfile(CONFIG_PATH, os.path.join(self.weights_dir, "config.yaml"))
+            curr_config_path = os.path.join(self.weights_dir, "config.yaml")
+            copyfile(CONFIG_PATH, curr_config_path)
+            # with open(curr_config_path, 'w') as config_file: # TODO save to file current instance parameters while keeping file format
+            #     yaml.dump(CONFIG, config_file, default_flow_style=True)
 
     def evaluate(self):
         """
