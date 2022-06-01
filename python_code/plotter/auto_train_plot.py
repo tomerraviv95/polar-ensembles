@@ -28,6 +28,31 @@ def get_ensemble_polar_64_32_crc11_iter5_decs_2():
     runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'load_weights': True, 'num_of_epochs':10, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':2, 'ensemble_crc_dist':'uniform', 'test_errors':100, 'train_minibatch_size':2000}
     script_params = {"decoder_type": "Ensemble"}
     return graph_params, runs_params, script_params
+##################################
+def get_polar_256_128_crc11_iter10():
+    graph_params = {'color': 'black', 'marker': 'o'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': False, 'iteration_num':10, 'crc_order': 11}
+    script_params = {"decoder_type":"BP"}
+    return graph_params, runs_params, script_params
+
+
+def get_weighted_polar_256_128_crc11_iter10():
+    graph_params = {'color': 'red', 'marker': 'o'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True , 'num_of_epochs':200, 'iteration_num':10, 'crc_order': 11, 'train_minibatch_size': 500}
+    script_params = {"decoder_type":"WBP"}
+    return graph_params, runs_params, script_params
+
+def get_weighted_polar_256_128_crc11_iter40():
+    graph_params = {'color': 'green', 'marker': 'o'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True , 'num_of_epochs':200, 'iteration_num':40, 'crc_order': 11, 'train_minibatch_size': 500}
+    script_params = {"decoder_type":"WBP"}
+    return graph_params, runs_params, script_params
+
+def get_ensemble_polar_256_128_crc11_iter10_decs_4():
+    graph_params = {'color': 'green', 'marker': '*', 'label':'Ensemble (256,128) 10 iterations 4 decoders'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':200, 'iteration_num': 10, 'crc_order': 11, 'ensemble_dec_num':4, 'ensemble_crc_dist':'uniform', 'test_errors':500, 'train_minibatch_size':2000}
+    script_params = {"decoder_type":"Ensemble", 'take_crc_0':True}
+    return graph_params, runs_params, script_params
 
 def get_ensemble_polar_64_32_crc11_iter5_decs_2_best():
     graph_params = {'color': 'blue', 'marker': 'x'}
@@ -37,59 +62,112 @@ def get_ensemble_polar_64_32_crc11_iter5_decs_2_best():
 
 ##################################
 
+##################################
+def get_polar_256_128_crc11_iter7():
+    graph_params = {'color': 'black', 'marker': 'o'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': False, 'iteration_num':7, 'crc_order': 11}
+    script_params = {"decoder_type":"BP"}
+    return graph_params, runs_params, script_params
+
+
+def get_weighted_polar_256_128_crc11_iter7():
+    graph_params = {'color': 'red', 'marker': 'o'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True , 'num_of_epochs':200, 'iteration_num':7, 'crc_order': 11, 'train_minibatch_size': 500}
+    script_params = {"decoder_type":"WBP"}
+    return graph_params, runs_params, script_params
+
+def get_weighted_polar_256_128_crc11_iter28():
+    graph_params = {'color': 'green', 'marker': 'o'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True , 'num_of_epochs':200, 'iteration_num':28, 'crc_order': 11, 'train_minibatch_size': 500}
+    script_params = {"decoder_type":"WBP"}
+    return graph_params, runs_params, script_params
+
+def get_ensemble_polar_256_128_crc11_iter7_decs_4():
+    graph_params = {'color': 'green', 'marker': '*', 'label':'Ensemble (256,128) 5 iterations 4 decoders'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':200, 'iteration_num': 7, 'crc_order': 11, 'ensemble_dec_num':4, 'ensemble_crc_dist':'uniform', 'test_errors':500, 'train_minibatch_size':2000}
+    script_params = {"decoder_type":"Ensemble", 'take_crc_0':True}
+    return graph_params, runs_params, script_params
+
+##################################
 def get_polar_256_128_crc11():
     graph_params = {'color': 'black', 'marker': 'o'}
     runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': False, 'iteration_num':5, 'crc_order': 11}
-    script_params = {"decoder_type":"FG"}
+    script_params = {"decoder_type":"BP"}
+    return graph_params, runs_params, script_params
+
+def get_weighted_polar_256_128_crc11_iter10():
+    graph_params = {'color': 'blue', 'marker': 'o'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True , 'num_of_epochs':100, 'iteration_num':10, 'crc_order': 11, 'train_minibatch_size': 500}
+    script_params = {"decoder_type":"WBP"}
+    return graph_params, runs_params, script_params
+
+def get_weighted_polar_256_128_crc11_iter20():
+    graph_params = {'color': 'green', 'marker': 'o'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True , 'num_of_epochs':100, 'iteration_num':20, 'crc_order': 11, 'train_minibatch_size': 500}
+    script_params = {"decoder_type":"WBP"}
+    return graph_params, runs_params, script_params
+
+def get_weighted_polar_256_128_crc11_iter40():
+    graph_params = {'color': 'magenta', 'marker': 'o'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True , 'num_of_epochs':100, 'iteration_num':40, 'crc_order': 11, 'train_minibatch_size': 500}
+    script_params = {"decoder_type":"WBP"}
     return graph_params, runs_params, script_params
 
 def get_weighted_polar_256_128_crc11():
     graph_params = {'color': 'red', 'marker': 'o'}
     runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True , 'num_of_epochs':100, 'iteration_num':5, 'crc_order': 11, 'train_minibatch_size': 500}
-    script_params = {"decoder_type":"WFG"}
+    script_params = {"decoder_type":"WBP"}
     return graph_params, runs_params, script_params
 
 def get_ensemble_polar_256_128_crc11_iter5_decs_2():
     graph_params = {'color': 'blue', 'marker': 'x'}
-    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':2, 'ensemble_crc_dist':'uniform', 'test_errors':100, 'train_minibatch_size':2000}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':2, 'ensemble_crc_dist':'uniform', 'test_errors':500, 'train_minibatch_size':2000}
     script_params = {"decoder_type":"Ensemble"}
     return graph_params, runs_params, script_params
 
 def get_ensemble_polar_256_128_crc11_iter5_decs_4():
     graph_params = {'color': 'green', 'marker': 'x'}
-    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':4, 'ensemble_crc_dist':'uniform', 'test_errors':100, 'train_minibatch_size':2000}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':4, 'ensemble_crc_dist':'uniform', 'test_errors':500, 'train_minibatch_size':2000}
     script_params = {"decoder_type":"Ensemble"}
     return graph_params, runs_params, script_params
 
 def get_ensemble_polar_256_128_crc11_iter5_decs_6():
     graph_params = {'color': 'magenta', 'marker': 'x'}
-    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':6, 'ensemble_crc_dist':'uniform', 'test_errors':100, 'train_minibatch_size':2000}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':6, 'ensemble_crc_dist':'uniform', 'test_errors':500, 'train_minibatch_size':2000}
+    script_params = {"decoder_type":"Ensemble"}
+    return graph_params, runs_params, script_params
+
+def get_ensemble_polar_256_128_crc11_iter5_decs_8():
+    graph_params = {'color': 'magenta', 'marker': 'x'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':8, 'ensemble_crc_dist':'uniform', 'test_errors':500, 'train_minibatch_size':3500}
     script_params = {"decoder_type":"Ensemble"}
     return graph_params, runs_params, script_params
 
 def get_ensemble_polar_256_128_crc11_iter5_decs_2_best():
-    graph_params = {'color': 'blue', 'marker': '*'}
-    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':2, 'ensemble_crc_dist':'uniform', 'test_errors':100, 'train_minibatch_size':2000}
+    graph_params = {'color': 'blue', 'marker': '*', 'label':'Ensemble (256,128) 5 iterations 2 decoders'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':2, 'ensemble_crc_dist':'uniform', 'test_errors':500, 'train_minibatch_size':2000}
     script_params = {"decoder_type":"Ensemble", 'take_crc_0':True}
     return graph_params, runs_params, script_params
 
 def get_ensemble_polar_256_128_crc11_iter5_decs_4_best():
-    graph_params = {'color': 'green', 'marker': '*'}
-    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':4, 'ensemble_crc_dist':'uniform', 'test_errors':100, 'train_minibatch_size':2000}
+    graph_params = {'color': 'green', 'marker': '*', 'label':'Ensemble (256,128) 5 iterations 4 decoders'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':4, 'ensemble_crc_dist':'uniform', 'test_errors':500, 'train_minibatch_size':2000}
     script_params = {"decoder_type":"Ensemble", 'take_crc_0':True}
     return graph_params, runs_params, script_params
 
 def get_ensemble_polar_256_128_crc11_iter5_decs_6_best():
     graph_params = {'color': 'magenta', 'marker': '*'}
-    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':6, 'ensemble_crc_dist':'uniform', 'test_errors':100, 'train_minibatch_size':2000}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':6, 'ensemble_crc_dist':'uniform', 'test_errors':500, 'train_minibatch_size':2000}
     script_params = {"decoder_type":"Ensemble", 'take_crc_0':True}
     return graph_params, runs_params, script_params
 
-def get_ensemble_polar_256_128_crc11_iter5_decs_8():
-    graph_params = {'color': 'magenta', 'marker': 'x'}
-    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':8, 'ensemble_crc_dist':'uniform', 'test_errors':100, 'train_minibatch_size':2000}
-    script_params = {"decoder_type":"Ensemble"}
+def get_ensemble_polar_256_128_crc11_iter5_decs_8_best():
+    graph_params = {'color': 'magenta', 'marker': '*', 'label':'Ensemble (256,128) 5 iterations 8 decoders'}
+    runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':8, 'ensemble_crc_dist':'uniform', 'test_errors':500, 'train_minibatch_size':3500}
+    script_params = {"decoder_type":"Ensemble", 'take_crc_0':True}
     return graph_params, runs_params, script_params
+
+
 
 
 ##################################
@@ -175,8 +253,8 @@ def getLabel(graph_params, runs_params, script_params):
     label = f"{script_params['decoder_type']} ({runs_params['code_len']},{runs_params['info_len']}) iters {runs_params['iteration_num']} crc{runs_params['crc_order']}"
     if script_params["decoder_type"] is "Ensemble":
         label += f" {runs_params['ensemble_crc_dist']} decs {runs_params['ensemble_dec_num']}"
-        if script_params['take_crc_0']:
-            label += f" best_dec"
+        if not script_params['take_crc_0']:
+            label += f" regular"
     return label
 
 def TrainDecs(decs_to_train):
@@ -264,12 +342,28 @@ if __name__ == '__main__':
     decs_to_plot_only - will plot them
     decs_to_load_plot - will load existing plot
     '''
+    decs_to_train_and_plot = []
+    decs_to_plot_only = []
+    decs_to_load_plot = []
 
     # decs_to_train_and_plot = [get_weighted_polar_64_32_crc11, get_ensemble_polar_64_32_crc11_iter5_decs_2]
+    # decs_to_train_and_plot = []
+    # decs_to_plot_only = [get_weighted_polar_1024_512_crc11_iter20 ,get_ensemble_polar_1024_512_crc11_iter5_decs_2_uniform, get_ensemble_polar_1024_512_crc11_iter5_decs_2_uniform_best, get_ensemble_polar_1024_512_crc11_iter5_decs_8_uniform_best]
+    # decs_to_load_plot = [get_polar_1024_512_crc11, get_weighted_polar_1024_512_crc11, get_ensemble_polar_1024_512_crc11_iter5_decs_4_uniform, get_ensemble_polar_1024_512_crc11_iter5_decs_4_uniform_best]
+    # decs_to_load_plot += []
+
+    # decs_to_train_and_plot = [get_weighted_polar_256_128_crc11_iter3, get_weighted_polar_256_128_crc11_iter12 , get_ensemble_polar_256_128_crc11_iter3_decs_4]
+    # decs_to_plot_only = [get_polar_256_128_crc11_iter3]
+    # decs_to_load_plot = []
+
     decs_to_train_and_plot = []
-    decs_to_plot_only = [get_weighted_polar_1024_512_crc11_iter20 ,get_ensemble_polar_1024_512_crc11_iter5_decs_2_uniform, get_ensemble_polar_1024_512_crc11_iter5_decs_2_uniform_best, get_ensemble_polar_1024_512_crc11_iter5_decs_8_uniform_best]
-    decs_to_load_plot = [get_polar_1024_512_crc11, get_weighted_polar_1024_512_crc11, get_ensemble_polar_1024_512_crc11_iter5_decs_4_uniform, get_ensemble_polar_1024_512_crc11_iter5_decs_4_uniform_best]
-    decs_to_load_plot += []
+    decs_to_plot_only = []
+    decs_to_load_plot = [get_polar_256_128_crc11_iter10, get_weighted_polar_256_128_crc11_iter10, get_weighted_polar_256_128_crc11_iter40, get_ensemble_polar_256_128_crc11_iter10_decs_4]
+
+    # decs_to_load_plot = [get_polar_256_128_crc11, get_weighted_polar_256_128_crc11, get_weighted_polar_256_128_crc11_iter10, get_weighted_polar_256_128_crc11_iter20, get_weighted_polar_256_128_crc11_iter40, get_ensemble_polar_256_128_crc11_iter5_decs_2_best, get_ensemble_polar_256_128_crc11_iter5_decs_4_best, get_ensemble_polar_256_128_crc11_iter5_decs_8_best]
+    #
+    # decs_to_load_plot = [get_polar_256_128_crc11, get_weighted_polar_256_128_crc11, get_weighted_polar_256_128_crc11_iter10, get_ensemble_polar_256_128_crc11_iter5_decs_2_best]
+
 
     # decs_to_train_and_plot = [get_weighted_polar_64_32_crc11_iter5, get_ensemble_polar_64_32_crc11_iter5_decs_2]
     # decs_to_plot_only = [get_polar_64_32_iter5, get_ensemble_polar_64_32_crc11_iter5_decs_2_best]
@@ -277,6 +371,6 @@ if __name__ == '__main__':
 
     dec_trained_params = TrainDecs(decs_to_train_and_plot)
 
-    PlotDecs(decs_to_load_plot, decs_to_plot_only, dec_trained_params, plot_type="FER")
+    PlotDecs(decs_to_load_plot, decs_to_plot_only, dec_trained_params, plot_type="BER")
 
 
