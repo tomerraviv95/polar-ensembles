@@ -1,4 +1,4 @@
-from python_code.plotter.plotter import *
+from python_code.plotter.plotter import Plotter
 from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.trainers.ensemble_trainer import EnsembleTrainer
 from dir_definitions import PLOTS_DIR, FIGURES_DIR, WEIGHTS_DIR
@@ -268,7 +268,7 @@ if __name__ == '__main__':
     # decs_to_train_and_plot = [get_weighted_polar_64_32_crc11, get_ensemble_polar_64_32_crc11_iter5_decs_2]
     decs_to_train_and_plot = []
     decs_to_plot_only = [get_weighted_polar_1024_512_crc11_iter20 ,get_ensemble_polar_1024_512_crc11_iter5_decs_2_uniform, get_ensemble_polar_1024_512_crc11_iter5_decs_2_uniform_best, get_ensemble_polar_1024_512_crc11_iter5_decs_8_uniform_best]
-    decs_to_load_plot = [get_polar_1024_512, get_weighted_polar_1024_512_crc11, get_ensemble_polar_1024_512_crc11_iter5_decs_4_uniform, get_ensemble_polar_1024_512_crc11_iter5_decs_4_uniform_best]
+    decs_to_load_plot = [get_polar_1024_512_crc11, get_weighted_polar_1024_512_crc11, get_ensemble_polar_1024_512_crc11_iter5_decs_4_uniform, get_ensemble_polar_1024_512_crc11_iter5_decs_4_uniform_best]
     decs_to_load_plot += []
 
     # decs_to_train_and_plot = [get_weighted_polar_64_32_crc11_iter5, get_ensemble_polar_64_32_crc11_iter5_decs_2]
