@@ -92,7 +92,7 @@ def get_weighted_polar_128_64():
 
 def get_polar_256_128():
     graph_params = {'label': 'FG (256,128)', 'color': 'black', 'marker': 'o'}
-    runs_params = {'code_len': 256, 'info_len': 128, 'run_name': 'polar_fg_256_128', 'load_weights': False}
+    runs_params = {'code_len': 256, 'info_len': 128, 'run_name': 'polar_fg_256_128', 'iteration_num': 5, 'load_weights': False}
     return graph_params, runs_params
 
 

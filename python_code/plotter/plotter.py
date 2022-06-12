@@ -1,12 +1,13 @@
 from python_code.plotter.plotter_types import *
 from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.trainers.ensemble_trainer import EnsembleTrainer
+from python_code.decoders.fg_decoder import FGDecoder
 from python_code.utils.python_utils import load_pkl, save_pkl
 from python_code.trainers.trainer import Trainer
 from python_code.plotter.plotter_config import *
 from dir_definitions import PLOTS_DIR, FIGURES_DIR, WEIGHTS_DIR
 import matplotlib.pyplot as plt
-from globals import CONFIG
+from globals import CONFIG, DEVICE
 import numpy as np
 import datetime
 import os
@@ -19,6 +20,8 @@ config_plot_params = {'val_SNR_start' : 1,
 
 
 def get_flops_num(graph_params, config_params, num_of_decoders):
+    ''' function receive plot for BP and decoders num for ensemble
+        return the ensemble flops per SNR '''
     for k, v in config_params.items():
         CONFIG.set_value(k, v)
     if not os.path.exists(PLOTS_DIR):
@@ -37,6 +40,47 @@ def get_flops_num(graph_params, config_params, num_of_decoders):
         total_params += params
 
     return total_params * (BP_fer * num_of_decoders + 1)
+
+def plot_avg_flops(ens_flops, ens_dec_num, config_params, title=""):
+    ''' compare flops for ensemble and WFG with equal iterations and N iterations
+    '''
+
+    ens_iters = config_params['iteration_num']
+    N = ens_iters*ens_dec_num
+    code_len = config_params['code_len']
+    info_len=config_params['info_len']
+    if not title:
+        title = f"Flops comparison: ({code_len},{info_len})"
+    val_SNRs = np.linspace(config_plot_params['val_SNR_start'], config_plot_params['val_SNR_end'], num=config_plot_params['val_num_SNR'])
+
+    dec1 = FGDecoder(code_len=code_len, info_len=info_len, design_snr=CONFIG.design_SNR, clipping_val=CONFIG.clipping_val, iteration_num=ens_iters, device=DEVICE)
+    dec2 = FGDecoder(code_len=code_len, info_len=info_len, design_snr=CONFIG.design_SNR, clipping_val=CONFIG.clipping_val, iteration_num=N, device=DEVICE)
+
+    total_params1 = 0
+    for name, parameter in dec1.named_parameters():
+        if not parameter.requires_grad: continue
+        params = parameter.numel()
+        total_params1 += params
+
+    total_params2 = 0
+    for name, parameter in dec2.named_parameters():
+        if not parameter.requires_grad: continue
+        params = parameter.numel()
+        total_params2 += params
+
+    wfg_lowbound_flops = [total_params1]*len(val_SNRs)
+    wfg_highbound_flops = [total_params2]*len(val_SNRs)
+
+    plt.plot(val_SNRs, ens_flops, label=f"Ensemble {ens_iters} iterations {ens_dec_num} decoders", color="green", marker="*")
+    plt.plot(val_SNRs, wfg_lowbound_flops, label=f"WBP {ens_iters} iterations", color="blue", marker="o")
+    plt.plot(val_SNRs, wfg_highbound_flops, label=f"WBP {N} iterations", color="red", marker="o")
+    plt.title(title)
+    plt.yscale('log')
+    plt.xlabel("Eb/N0(dB)")
+    plt.ylabel("Average Flops")
+    plt.grid(True, which='both')
+    plt.legend(loc='lower left', prop={'size': 15})
+
 
 
 class Plotter:
@@ -251,6 +295,10 @@ class Plotter:
         plt.legend(loc='lower left', prop={'size': 15})
 
 if __name__ == '__main__':
+
+    graph,conf = get_polar_256_128()
+    f = get_flops_num(*get_polar_256_128(),num_of_decoders=4)
+    plot_avg_flops(ens_flops=f, ens_dec_num=4, config_params=conf, title="")
 
 
     ''' 64 32 '''

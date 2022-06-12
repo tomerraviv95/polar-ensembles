@@ -89,8 +89,8 @@ def get_ensemble_polar_256_128_crc11_iter7_decs_4():
     return graph_params, runs_params, script_params
 
 ##################################
-def get_polar_256_128_crc11():
-    graph_params = {'color': 'black', 'marker': 'o'}
+def get_polar_256_128_crc11_iter5():
+    graph_params = {'color': 'black', 'marker': 'o', 'label':'BP (256,128) 5 iterations'}
     runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': False, 'iteration_num':5, 'crc_order': 11}
     script_params = {"decoder_type":"BP"}
     return graph_params, runs_params, script_params
@@ -113,8 +113,8 @@ def get_weighted_polar_256_128_crc11_iter40():
     script_params = {"decoder_type":"WBP"}
     return graph_params, runs_params, script_params
 
-def get_weighted_polar_256_128_crc11():
-    graph_params = {'color': 'red', 'marker': 'o'}
+def get_weighted_polar_256_128_crc11_iter5():
+    graph_params = {'color': 'red', 'marker': 'o', 'label':'WBP (256,128) 5 iterations'}
     runs_params = {'code_type': 'Polar', 'code_len': 256, 'info_len': 128, 'load_weights': True , 'num_of_epochs':100, 'iteration_num':5, 'crc_order': 11, 'train_minibatch_size': 500}
     script_params = {"decoder_type":"WBP"}
     return graph_params, runs_params, script_params
@@ -356,9 +356,9 @@ if __name__ == '__main__':
     # decs_to_plot_only = [get_polar_256_128_crc11_iter3]
     # decs_to_load_plot = []
 
-    decs_to_train_and_plot = []
-    decs_to_plot_only = []
-    decs_to_load_plot = [get_polar_256_128_crc11_iter10, get_weighted_polar_256_128_crc11_iter10, get_weighted_polar_256_128_crc11_iter40, get_ensemble_polar_256_128_crc11_iter10_decs_4]
+    # decs_to_train_and_plot = []
+    # decs_to_plot_only = []
+    # decs_to_load_plot = [get_polar_256_128_crc11_iter10, get_weighted_polar_256_128_crc11_iter10, get_weighted_polar_256_128_crc11_iter40, get_ensemble_polar_256_128_crc11_iter10_decs_4]
 
     # decs_to_load_plot = [get_polar_256_128_crc11, get_weighted_polar_256_128_crc11, get_weighted_polar_256_128_crc11_iter10, get_weighted_polar_256_128_crc11_iter20, get_weighted_polar_256_128_crc11_iter40, get_ensemble_polar_256_128_crc11_iter5_decs_2_best, get_ensemble_polar_256_128_crc11_iter5_decs_4_best, get_ensemble_polar_256_128_crc11_iter5_decs_8_best]
     #
@@ -366,11 +366,11 @@ if __name__ == '__main__':
 
 
     # decs_to_train_and_plot = [get_weighted_polar_64_32_crc11_iter5, get_ensemble_polar_64_32_crc11_iter5_decs_2]
-    # decs_to_plot_only = [get_polar_64_32_iter5, get_ensemble_polar_64_32_crc11_iter5_decs_2_best]
-    # decs_to_load_plot = []
+    decs_to_plot_only = []
+    decs_to_load_plot = [get_polar_256_128_crc11_iter5, get_weighted_polar_256_128_crc11_iter5, get_ensemble_polar_256_128_crc11_iter5_decs_4_best, get_ensemble_polar_256_128_crc11_iter5_decs_8_best]
 
     dec_trained_params = TrainDecs(decs_to_train_and_plot)
 
-    PlotDecs(decs_to_load_plot, decs_to_plot_only, dec_trained_params, plot_type="BER")
+    PlotDecs(decs_to_load_plot, decs_to_plot_only, dec_trained_params, plot_type="FER")
 
 
