@@ -1,6 +1,6 @@
 def get_polar_64_32():
-    graph_params = {'label': 'FG (64,32)', 'color': 'black', 'marker': 'o'}
-    runs_params = {'code_len': 64, 'info_len': 32, 'run_name': 'polar_fg_64_32', 'load_weights': False}
+    graph_params = {'label': 'BP (64,32) iters 5 crc11', 'color': 'black', 'marker': 'o'}
+    runs_params = {'code_len': 64, 'info_len': 32, 'run_name': 'polar_fg_64_32', 'iteration_num': 5, 'load_weights': False}
     return graph_params, runs_params
 
 def get_weighted_polar_64_32_iter5_crc11():
@@ -78,6 +78,12 @@ def get_ensemble_64_32_crc11_iter5_best_dec():
     runs_params = {'code_len': 64, 'info_len': 32, 'run_name': 'ensemble_64_32_crc11_iter5', 'load_weights': True}
     return graph_params, runs_params
 
+def get_ensemble_polar_64_32_crc11_iter5_decs_4_uniform():
+    graph_params = {'color': 'blue', 'marker': 'x'}
+    runs_params = {'code_type': 'Polar', 'code_len': 64, 'info_len': 32, 'run_name': 'ensemble_64_32_iters5_crc11_uniform_decs_4', 'load_weights': True, 'num_of_epochs':100, 'iteration_num': 5, 'crc_order': 11, 'ensemble_dec_num':4, 'ensemble_crc_dist':'uniform', 'test_errors':200, 'train_minibatch_size':2000}
+    script_params = {"decoder_type": "Ensemble"}
+    return graph_params, runs_params
+
 def get_polar_128_64():
     graph_params = {'label': 'FG (128,64)', 'color': 'blue', 'marker': 'o'}
     runs_params = {'code_len': 128, 'info_len': 64, 'run_name': 'polar_fg_128_64', 'load_weights': False}
@@ -91,7 +97,7 @@ def get_weighted_polar_128_64():
 
 
 def get_polar_256_128():
-    graph_params = {'label': 'FG (256,128)', 'color': 'black', 'marker': 'o'}
+    graph_params = {'label': 'BP (256,128) iters 5 crc11', 'color': 'black', 'marker': 'o'}
     runs_params = {'code_len': 256, 'info_len': 128, 'run_name': 'polar_fg_256_128', 'iteration_num': 5, 'load_weights': False}
     return graph_params, runs_params
 
@@ -151,10 +157,9 @@ def get_ensemble_64_32_test():
     return graph_params, runs_params
 
 ''' 512 256 '''
-
 def get_polar_512_256():
-    graph_params = {'label': 'FG (512,256)', 'color': 'black', 'marker': 'o'}
-    runs_params = {'code_len': 512, 'info_len': 256, 'run_name': 'polar_fg_512_256', 'load_weights': False}
+    graph_params = {'label': 'BP (512,256) iters 5 crc11', 'color': 'black', 'marker': 'o'}
+    runs_params = {'code_len': 512, 'info_len': 256, 'iteration_num': 5, 'load_weights': False}
     return graph_params, runs_params
 
 def get_wfg_512_256_iters5_crc11():
@@ -205,8 +210,8 @@ def get_ensemble_512_256_iters6_crc11_sum_mod():
 ''' 1024 512'''
 
 def get_polar_1024_512():
-    graph_params = {'label': 'FG (1024,512)', 'color': 'black', 'marker': 'o'}
-    runs_params = {'code_len': 1024, 'info_len': 512, 'run_name': 'polar_fg_1024_512', 'load_weights': False}
+    graph_params = {'label': 'BP (1024,512) iters 5 crc11', 'color': 'black', 'marker': 'o'}
+    runs_params = {'code_len': 1024, 'info_len': 512, 'iteration_num': 5, 'load_weights': False}
     return graph_params, runs_params
 
 def get_wfg_1024_512_iters5_crc11():
