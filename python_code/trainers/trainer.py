@@ -119,14 +119,18 @@ class Trainer(object):
 
         return calculate_accuracy(decoded_words, target_per_snr, DEVICE)
 
-    def evaluate_crc_distribution(self, type=''):
+    def evaluate_crc_distribution(self, type='', only_crc_errors=True):
         '''
         Evaluate the crc value for every snr
         '''
         snr_range = self.snr_range['val']
         max_val = 2**CONFIG.crc_order
-        if type == 'sum':
-            max_val = CONFIG.crc_order + 1
+        if type =="uniform4":
+            max_val = 3
+        elif type == 'sum':
+            max_val = CONFIG.crc_order
+        elif type == 'sum%4':
+            max_val = 3
         pred_crc_distribution = np.zeros((len(snr_range), max_val+1))
         actual_crc_distribution = np.zeros((len(snr_range), max_val+1))
         crc2int = lambda crc : int("".join(str(int(x)) for x in crc),2)
@@ -144,11 +148,16 @@ class Trainer(object):
                 pred_crc = crc.crc_check(decoded_words, CONFIG.crc_order)
                 for w in range(np.shape(actual_crc)[0]):
                     actual_val = crc2int(actual_crc[w])
+                    pred_val = crc2int(pred_crc[w])
+                    if only_crc_errors and (pred_val == 0):
+                        continue # counting only errors
                     actual_crc_distribution[j,actual_val] += 1
-                    if type == 'sum':
+                    if type =="uniform4":
+                        pred_val = crc2int(pred_crc[w][:2])
+                    elif type == 'sum':
                         pred_val = crc.sumBits(pred_crc[w])
-                    else:
-                        pred_val = crc2int(pred_crc[w])
+                    elif type == 'sum%4':
+                        pred_val = crc.sumBits(pred_crc[w])%4
                     pred_crc_distribution[j,pred_val] += 1
 
                 print(f'done {int(100*(i+10*j)/(10*len(snr_range)))}%')

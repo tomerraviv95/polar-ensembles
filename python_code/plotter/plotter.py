@@ -12,9 +12,9 @@ import numpy as np
 import datetime
 import os
 
-config_plot_params = {'val_SNR_start' : 1,
+config_plot_params = {'val_SNR_start' : 3,
                       'val_SNR_end' : 4,
-                      'val_num_SNR' : 7,
+                      'val_num_SNR' : 1,
                       'test_errors' : 500
                 }
 
@@ -72,8 +72,8 @@ def plot_avg_flops(ens_flops, ens_dec_num, config_params, title=""):
     wfg_highbound_flops = [total_params2]*len(val_SNRs)
 
     plt.plot(val_SNRs, ens_flops, label=f"Ensemble {ens_iters} iterations {ens_dec_num} decoders", color="green", marker="*")
-    plt.plot(val_SNRs, wfg_lowbound_flops, label=f"WBP {ens_iters} iterations", color="blue", marker="o")
-    plt.plot(val_SNRs, wfg_highbound_flops, label=f"WBP {N} iterations", color="red", marker="o")
+    plt.plot(val_SNRs, wfg_lowbound_flops, label=f"WBP {ens_iters} iterations", color="red", marker="o")
+    plt.plot(val_SNRs, wfg_highbound_flops, label=f"WBP {N} iterations", color="cyan", marker="o")
     plt.title(title)
     plt.yscale('log')
     plt.xlabel("Eb/N0(dB)")
@@ -170,7 +170,7 @@ class Plotter:
         plt.xlim((val_SNRs[0] - 0.5, val_SNRs[-1] + 0.5))
 
 
-    def get_crc_plot(self, dec: Trainer, method_name: str, type=None):
+    def get_crc_plot(self, dec: Trainer, method_name: str, type=None, only_crc_errors=True):
         print(method_name)
         # set the path to saved plot results for a single method (so we do not need to run anew each time)
         if not os.path.exists(PLOTS_DIR):
@@ -186,13 +186,17 @@ class Plotter:
         else:
             # otherwise - run again
             print("calculating fresh")
-            actual_crc_dist, pred_crc_dist = dec.evaluate_crc_distribution(type=type)
+            actual_crc_dist, pred_crc_dist = dec.evaluate_crc_distribution(type=type, only_crc_errors=only_crc_errors)
             to_save_dict = {'actual_crc': actual_crc_dist, 'pred_crc': pred_crc_dist}
             save_pkl(plots_path, to_save_dict)
             graph = to_save_dict[self.type]
         return graph
 
-    def plot_crc(self, graph_params, config_params, type=None):
+    def plot_crc(self, graph_params, config_params, type=None, only_crc_errors=True, words_count=1e5):
+        '''only crc errors will keep only crc vals that are not 0
+            evaluating CRC in trainer.evaluate_crc_dist()
+            words count will be the number of CRC evaluated through channel
+        '''
         if config_params["load_weights"]:
             plot_config_path = os.path.join(WEIGHTS_DIR,config_params["run_name"]+"\\config.yaml")
             CONFIG.load_config(plot_config_path)
@@ -201,36 +205,64 @@ class Plotter:
             CONFIG.set_value(k, v)
         for k, v in config_plot_params.items():
             CONFIG.set_value(k, v)
-        val_SNRs = np.linspace(CONFIG.val_SNR_start, CONFIG.val_SNR_end, num=CONFIG.val_num_SNR)
+        CONFIG.set_value('val_batch_size',int(words_count))
+        val_SNRs = np.linspace(config_plot_params['val_SNR_start'], config_plot_params['val_SNR_end'], num=config_plot_params['val_num_SNR'])
         dec = PolarFGTrainer()
-        crc = self.get_crc_plot(dec, graph_params['label'], type=type)
-        bins = 5
+        run_name = f"{graph_params['label']} crc dist-{type} counts-{int(words_count)}"
+        crc = self.get_crc_plot(dec, run_name, type=type, only_crc_errors=only_crc_errors)
+        bins = 16
         if 'bins' in graph_params.keys():
             bins = graph_params['bins']
         max_val = 2**CONFIG.crc_order
-        step = int(2**CONFIG.crc_order/bins)
-        if type == 'sum':
+        step = int(max_val/bins)
+        shift = 1 if only_crc_errors else 0
+        crc_vals = np.arange(start=shift, stop=max_val+1, step=step)
+        xlabel = "crc val"
+        if type == 'uniform4':
             step = 1
-            max_val = CONFIG.crc_order + 1
+            b = max_val/4
+            crc_vals = [f'{int(i*b)}-{int((i+1)*b)}'for i in range(4)]
+            max_val = 3
+            xlabel = 'crc range'
+        elif type == 'sum':
+            step = 1
+            max_val = CONFIG.crc_order
+            crc_vals = np.arange(start=0, stop=max_val+1, step=step)
+            xlabel = 'crc bit sum'
+        elif type == 'sum%4':
+            step = 1
+            max_val = 3
+            crc_vals = np.arange(start=0, stop=max_val+1, step=step)
+            xlabel = 'crc bit sum % 4'
 
-        crc_vals = np.linspace(0, stop=max_val, num=(max_val+1))
         for j,snr in enumerate(val_SNRs):
-            plt.figure(num=j)
+            plt.figure()
             crc_tmp = crc[j]
-            crc_vals = crc_vals.reshape(np.shape(crc_tmp))
+            # crc_vals = crc_vals.reshape(np.shape(crc_tmp))
             crc_counts = np.zeros(np.shape(crc_vals))
-            if step != 1:
-                for i in range(1,crc_vals.size):
-                    crc_counts[1+step*int(np.floor(i/step))] += crc_tmp[i]
+            if step != 1: # quantize bins
+                width = (max_val/bins)*0.8
+                ptr = 0
+                for idx in range(len(crc_vals)-1):
+                    while(ptr < crc_vals[idx+1]):
+                        crc_counts[idx] += crc_tmp[ptr]
+                        ptr +=1
+                        if ptr >= len(crc_tmp):
+                            print("ERROR - out of range in quantization")
+                            raise OverflowError
+                            exit(-1)
+                crc_counts[-1] = sum(crc_tmp[ptr:])
             else:
+                width = 0.5
                 crc_counts = crc_tmp
-            plt.bar(crc_vals[1:], crc_counts[1:], width=0.5)
-            plt.title(f'{self.type} Comparison @ snr: {snr}')
-            plt.yscale('log')
-            plt.xlabel("crc val")
+            title = f'CRC distribution - {type} @ snr: {snr}'
+            if not type:
+                title = f'CRC distribution @ snr: {snr}'
+            plt.bar(crc_vals, crc_counts, width=width)
+            plt.title(title)
+            plt.xlabel(xlabel)
             plt.ylabel('counts')
             plt.legend(loc='lower left', prop={'size': 15})
-            plt.xlim((crc_vals[0] - 10, crc_vals[-1] + 2))
 
     def plot_crc_passrate(self, dec):
     # TODO save graph then loads them
@@ -296,9 +328,26 @@ class Plotter:
 
 if __name__ == '__main__':
 
-    graph,conf = get_polar_256_128()
-    f = get_flops_num(*get_polar_256_128(),num_of_decoders=4)
-    plot_avg_flops(ens_flops=f, ens_dec_num=4, config_params=conf, title="")
+
+    ''' flops '''
+    # graph,conf = get_polar_256_128()
+    # f = get_flops_num(*get_polar_256_128(),num_of_decoders=4)
+    # plot_avg_flops(ens_flops=f, ens_dec_num=4, config_params=conf, title="")
+
+    ''' CRC '''
+    # plotter = Plotter(run_over=True, type='CRCPASS')
+    # plotter.plot(*get_ensemble_512_256_iters5_crc11_sum_decs_6(),dec_type='Ensemble')
+
+    ''' CRC dist '''
+    words_count = 1e4
+    plotter = Plotter(run_over=False, type='pred_crc')
+    plotter.plot_crc(*get_polar_64_32(), type='', only_crc_errors=True, words_count=words_count)
+    plotter = Plotter(run_over=False, type='pred_crc')
+    plotter.plot_crc(*get_polar_64_32(), type='uniform4', only_crc_errors=True, words_count=words_count)
+    plotter = Plotter(run_over=False, type='pred_crc')
+    plotter.plot_crc(*get_polar_64_32(), type='sum', only_crc_errors=True, words_count=words_count)
+    plotter = Plotter(run_over=False, type='pred_crc')
+    plotter.plot_crc(*get_polar_64_32(), type='sum%4', only_crc_errors=True, words_count=words_count)
 
 
     ''' 64 32 '''
@@ -357,13 +406,6 @@ if __name__ == '__main__':
     # plotter.plot(*get_ensemble_1024_512_iters5_crc11_sum_decs_4_best(),dec_type='Ensemble', take_crc_0=True)
 
 
-    ''' CRC '''
-    # plotter = Plotter(run_over=True, type='CRCPASS')
-    # plotter.plot(*get_ensemble_512_256_iters5_crc11_sum_decs_6(),dec_type='Ensemble')
-
-    ''' CRC dist '''
-    # plotter = Plotter(run_over=True, type='pred_crc')
-    # plotter.plot_crc(*get_polar_64_32(), type='sum')
 
 
 
