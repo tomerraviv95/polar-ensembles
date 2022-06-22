@@ -217,7 +217,7 @@ class Plotter:
         step = int(max_val/bins)
         shift = 1 if only_crc_errors else 0
         crc_vals = np.arange(start=shift, stop=max_val+1, step=step)
-        xlabel = "crc val"
+        xlabel = "crc value"
         if type == 'uniform4':
             step = 1
             b = max_val/4
@@ -339,7 +339,7 @@ if __name__ == '__main__':
     # plotter.plot(*get_ensemble_512_256_iters5_crc11_sum_decs_6(),dec_type='Ensemble')
 
     ''' CRC dist '''
-    words_count = 1e4
+    words_count = 1e5
     plotter = Plotter(run_over=False, type='pred_crc')
     plotter.plot_crc(*get_polar_64_32(), type='', only_crc_errors=True, words_count=words_count)
     plotter = Plotter(run_over=False, type='pred_crc')
