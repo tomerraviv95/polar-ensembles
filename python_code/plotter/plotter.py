@@ -264,9 +264,10 @@ class Plotter:
             else:
                 width = 0.5
                 crc_counts = crc_tmp
-            title = f'CRC distribution - {type} @ snr: {snr}'
+            # title = f'CRC distribution - {type} @ snr: {snr} [dB]'
             if not type:
                 title = f'CRC distribution @ snr: {snr}'
+            title = f'CRC distribution - ({CONFIG.code_len},{CONFIG.info_len}) @ snr: {snr} [dB]'
             plt.bar(crc_vals, crc_counts, width=width)
             plt.title(title)
             plt.xlabel(xlabel)
@@ -371,19 +372,19 @@ if __name__ == '__main__':
     # plot_avg_flops(ens_flops=f, ens_dec_num=8, config_params=conf, title="")
 
     ''' CRC '''
-    plotter = Plotter(run_over=True, type='CRCPASS')
-    plotter.plot(*get_ensemble_polar_64_32_crc11_iter5_decs_4_uniform(),dec_type='Ensemble')
+    # plotter = Plotter(run_over=True, type='CRCPASS')
+    # plotter.plot(*get_ensemble_polar_64_32_crc11_iter5_decs_4_uniform(),dec_type='Ensemble')
 
     ''' CRC dist '''
-    # words_count = 1e5
-    # plotter = Plotter(run_over=False, type='pred_crc')
-    # plotter.plot_crc(*get_polar_64_32(), type='', only_crc_errors=True, words_count=words_count)
-    # plotter = Plotter(run_over=False, type='pred_crc')
-    # plotter.plot_crc(*get_polar_64_32(), type='uniform4', only_crc_errors=True, words_count=words_count)
-    # plotter = Plotter(run_over=False, type='pred_crc')
-    # plotter.plot_crc(*get_polar_64_32(), type='sum', only_crc_errors=True, words_count=words_count)
-    # plotter = Plotter(run_over=False, type='pred_crc')
-    # plotter.plot_crc(*get_polar_64_32(), type='sum%4', only_crc_errors=True, words_count=words_count)
+    words_count = 1e5
+    plotter = Plotter(run_over=False, type='pred_crc')
+    plotter.plot_crc(*get_polar_64_32(), type='', only_crc_errors=True, words_count=words_count)
+    plotter = Plotter(run_over=False, type='pred_crc')
+    plotter.plot_crc(*get_polar_64_32(), type='uniform4', only_crc_errors=True, words_count=words_count)
+    plotter = Plotter(run_over=False, type='pred_crc')
+    plotter.plot_crc(*get_polar_64_32(), type='sum', only_crc_errors=True, words_count=words_count)
+    plotter = Plotter(run_over=False, type='pred_crc')
+    plotter.plot_crc(*get_polar_64_32(), type='sum%4', only_crc_errors=True, words_count=words_count)
 
 
     ''' 64 32 '''
