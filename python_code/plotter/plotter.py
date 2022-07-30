@@ -342,13 +342,13 @@ if __name__ == '__main__':
     ''' flops '''
     '''64 32'''
     graph,conf = get_polar_64_32()
-    # f = get_flops_num(*get_polar_64_32(),num_of_decoders=4)
-    # plot_avg_flops(ens_flops=f, ens_dec_num=4, config_params=conf, title="")
-    # f = get_flops_num(*get_polar_64_32(),num_of_decoders=2)
-    # plot_avg_flops(ens_flops=f, ens_dec_num=2, config_params=conf, title="")
+    f = get_flops_num(*get_polar_64_32(),num_of_decoders=4)
+    plot_avg_flops(ens_flops=f, ens_dec_num=4, config_params=conf, title="")
+    f = get_flops_num(*get_polar_64_32(),num_of_decoders=2)
+    plot_avg_flops(ens_flops=f, ens_dec_num=2, config_params=conf, title="")
 
     '''256 128'''
-    graph,conf = get_polar_256_128()
+    #graph,conf = get_polar_256_128()
     # f = get_flops_num(*get_polar_256_128(),num_of_decoders=4)
     # plot_avg_flops(ens_flops=f, ens_dec_num=4, config_params=conf, title="")
 
@@ -356,7 +356,7 @@ if __name__ == '__main__':
     # plot_avg_flops(ens_flops=f, ens_dec_num=8, config_params=conf, title="")
 
     '''512 256'''
-    graph,conf = get_polar_512_256()
+    #graph,conf = get_polar_512_256()
     # f = get_flops_num(*get_polar_512_256(),num_of_decoders=4)
     # plot_avg_flops(ens_flops=f, ens_dec_num=4, config_params=conf, title="")
 
@@ -364,7 +364,7 @@ if __name__ == '__main__':
     # plot_avg_flops(ens_flops=f, ens_dec_num=8, config_params=conf, title="")
 
     '''1024 512'''
-    graph,conf = get_polar_1024_512()
+    #graph,conf = get_polar_1024_512()
     # f = get_flops_num(*get_polar_1024_512(),num_of_decoders=4)
     # plot_avg_flops(ens_flops=f, ens_dec_num=4, config_params=conf, title="")
 
@@ -376,15 +376,15 @@ if __name__ == '__main__':
     # plotter.plot(*get_ensemble_polar_64_32_crc11_iter5_decs_4_uniform(),dec_type='Ensemble')
 
     ''' CRC dist '''
-    words_count = 1e5
-    plotter = Plotter(run_over=False, type='pred_crc')
-    plotter.plot_crc(*get_polar_64_32(), type='', only_crc_errors=True, words_count=words_count)
-    plotter = Plotter(run_over=False, type='pred_crc')
-    plotter.plot_crc(*get_polar_64_32(), type='uniform4', only_crc_errors=True, words_count=words_count)
-    plotter = Plotter(run_over=False, type='pred_crc')
-    plotter.plot_crc(*get_polar_64_32(), type='sum', only_crc_errors=True, words_count=words_count)
-    plotter = Plotter(run_over=False, type='pred_crc')
-    plotter.plot_crc(*get_polar_64_32(), type='sum%4', only_crc_errors=True, words_count=words_count)
+    #words_count = 1e5
+    #plotter = Plotter(run_over=False, type='pred_crc')
+    #plotter.plot_crc(*get_polar_64_32(), type='', only_crc_errors=True, words_count=words_count)
+    #plotter = Plotter(run_over=False, type='pred_crc')
+    #plotter.plot_crc(*get_polar_64_32(), type='uniform4', only_crc_errors=True, words_count=words_count)
+    #plotter = Plotter(run_over=False, type='pred_crc')
+    #plotter.plot_crc(*get_polar_64_32(), type='sum', only_crc_errors=True, words_count=words_count)
+    #plotter = Plotter(run_over=False, type='pred_crc')
+    #plotter.plot_crc(*get_polar_64_32(), type='sum%4', only_crc_errors=True, words_count=words_count)
 
 
     ''' 64 32 '''

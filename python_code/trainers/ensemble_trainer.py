@@ -1,4 +1,5 @@
 from dir_definitions import WEIGHTS_DIR, CONFIG_PATH
+from torch.nn import BCEWithLogitsLoss
 from shutil import copyfile
 from python_code.utils.python_utils import llr_to_bits
 from python_code.utils.evaluation_criterion import calculate_accuracy
@@ -38,9 +39,22 @@ class EnsembleTrainer(Trainer):
                                      ensemble_crc_dist=CONFIG.ensemble_crc_dist)
         self.decoder_name = 'Ensemble'
 
-    def calc_loss(self, prediction, labels):
-        output, not_satisfied_list = prediction
-        return self.criterion(-output, labels)
+    def loss_setup(self):
+        if CONFIG.criterion_type == 'BCE':
+            self.criterion = BCEWithLogitsLoss(reduction='none').to(device=DEVICE)
+        else:
+            raise ValueError('No such loss type!')
+
+    def calc_loss(self, prediction, labels, decoders_mask):
+        losses_vec = torch.sum(self.criterion(-prediction, labels),1)
+        for dec_id in range(1,self.model.num_of_decoders+1): #First decoder is BP
+            logical_vec = (decoders_mask == dec_id).flatten("F")
+            mini_batch_size = np.sum(logical_vec)
+            before = np.array(losses_vec.cpu().detach().numpy())
+            losses_vec[logical_vec] /= mini_batch_size
+            after = losses_vec.cpu().detach().numpy()
+        return torch.sum(losses_vec)
+
 
     def decode(self, soft_values):
         return llr_to_bits(soft_values)
@@ -160,10 +174,10 @@ class EnsembleTrainer(Trainer):
                 rx_per_snr = rx_per_snr.to(device=DEVICE)
                 target_per_snr = target_per_snr.to(device=DEVICE)
 
-                prediction = self.model(rx_per_snr)
+                prediction,_,decoders_mask = self.model(rx_per_snr,get_mask=True)
 
                 # calculate loss
-                loss = self.calc_loss(prediction=prediction, labels=target_per_snr)
+                loss = self.calc_loss(prediction=prediction, labels=target_per_snr,decoders_mask=decoders_mask)
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
@@ -235,8 +249,8 @@ if __name__ == "__main__":
     # load config and run evaluation of decoder
     dec = EnsembleTrainer()
 
-    start = time()
 
+    start = time()
     ber, fer = dec.train()
 
     end = time()

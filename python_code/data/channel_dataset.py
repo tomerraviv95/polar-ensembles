@@ -47,7 +47,7 @@ class ChannelModelDataset(Dataset):
         (It is used with batch-filtering such as very noisy words....
         I removed the filtering here)
         """
-        rate = float(self.info_len / self.code_len)
+        rate = float((self.info_len-self.crc_order) / self.code_len)
         rx = np.empty((0, self.code_len))
         tx = np.empty((0, self.code_len))
         u = np.empty((0, self.info_len))

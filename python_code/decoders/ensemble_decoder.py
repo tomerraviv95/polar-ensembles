@@ -23,7 +23,6 @@ class EnsembleDecoder(Decoder):
         self.crc_order = crc_order
         self.crc_dist = ensemble_crc_dist
         self.InitSelectorByCrc()
-        self.decoders_mask = [0] * (self.num_of_decoders + 1)
         self._build_model()
         self.generateCRCpassrateDict()
         self.keep_crc_passrate = False
