@@ -1,7 +1,7 @@
 from python_code.utils.python_utils import llr_to_bits
 from python_code.decoders.fg_decoder import FGDecoder
 from python_code.trainers.trainer import Trainer
-from globals import CONFIG, DEVICE
+from globals import *
 
 EARLY_TERMINATION = True
 
@@ -15,7 +15,8 @@ class PolarFGTrainer(Trainer):
         run_name = CONFIG.run_name
         if not(run_name):
             run_name = f"wfg_{CONFIG.code_len}_{CONFIG.info_len}_iters{CONFIG.iteration_num}_crc{CONFIG.crc_order}"
-        CONFIG.set_value('run_n ame',run_name)
+        CONFIG.set_value('run name',run_name)
+        LOGD(F"run name FG: {run_name}")
         super().__init__()
 
     def load_model(self):

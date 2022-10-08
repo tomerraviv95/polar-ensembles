@@ -6,7 +6,7 @@ from python_code.utils.evaluation_criterion import calculate_accuracy
 from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.decoders.ensemble_decoder import EnsembleDecoder
 from python_code.trainers.trainer import Trainer
-from globals import CONFIG, DEVICE
+from globals import *
 from time import time
 import numpy as np
 import torch
@@ -25,6 +25,7 @@ class EnsembleTrainer(Trainer):
         if not(run_name):
             run_name = f"ensemble_{CONFIG.code_len}_{CONFIG.info_len}_iters{CONFIG.iteration_num}_crc{CONFIG.crc_order}_{CONFIG.ensemble_crc_dist}_decs_{CONFIG.ensemble_dec_num}"
         CONFIG.set_value('run_name',run_name)
+        LOGD(f"run name ensemble: {run_name}")
         super().__init__()
 
     def load_model(self):
@@ -206,7 +207,7 @@ class EnsembleTrainer(Trainer):
         if not os.path.exists(self.weights_dir):
             os.makedirs(self.weights_dir)
             # save config in output dir
-            copyfile(CONFIG_PATH, os.path.join(self.weights_dir, "config.yaml"))
+        copyfile(CONFIG_PATH, os.path.join(self.weights_dir, "config.yaml"))
         for dec_id,dec in enumerate(self.model.decoders):
             if dec_id == 0:
                 continue
