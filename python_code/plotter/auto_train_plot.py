@@ -3,7 +3,8 @@ from python_code.trainers.fg_trainer import PolarFGTrainer
 from python_code.trainers.ensemble_trainer import EnsembleTrainer
 from dir_definitions import PLOTS_DIR, FIGURES_DIR, WEIGHTS_DIR
 import matplotlib.pyplot as plt
-from globals import *
+from globals import CONFIG, DEVICE
+from python_code.utils.color_prints import *
 import datetime
 import os
 from time import time
@@ -312,7 +313,8 @@ def takeBestDec(graph_params, runs_params, script_params):
 
 def getRunName(graph_params, runs_params, script_params):
     if 'run_name' in runs_params.keys():
-        return runs_params['run_name']
+        if runs_params['run_name']:
+            return runs_params['run_name']
 
     if script_params["decoder_type"] is "Ensemble":
         run_name = f"ensemble_{runs_params['code_len']}_{runs_params['info_len']}_iters{runs_params['iteration_num']}_crc{runs_params['crc_order']}_{runs_params['ensemble_crc_dist']}_decs_{runs_params['ensemble_dec_num']}"
