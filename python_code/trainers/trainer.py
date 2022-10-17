@@ -10,8 +10,10 @@ import numpy as np
 import torch
 import time
 import os
+from python_code.codes.crc import crc
+import yaml
 
-EARLY_STOPPING_PATIENCE = 5
+EARLY_STOPPING_PATIENCE = 10
 SYSTEMATIC_ENCODING = False
 USE_LLR = True
 
@@ -53,7 +55,8 @@ class Trainer(object):
                                                            info_ind=self.model.info_ind,
                                                            system_enc=SYSTEMATIC_ENCODING,
                                                            code_gm=self.model.code_gm,
-                                                           decoder_name=self.decoder_name)
+                                                           decoder_name=self.decoder_name,
+                                                           crc_order=CONFIG.crc_order)
                                 for phase in ['train', 'val']}
         self.dataloaders = {phase: torch.utils.data.DataLoader(self.channel_dataset[phase]) for phase in
                             ['train', 'val']}
@@ -71,7 +74,10 @@ class Trainer(object):
         if not os.path.exists(self.weights_dir):
             os.makedirs(self.weights_dir)
             # save config in output dir
-            copyfile(CONFIG_PATH, os.path.join(self.weights_dir, "config.yaml"))
+        curr_config_path = os.path.join(self.weights_dir, "config.yaml")
+        copyfile(CONFIG_PATH, curr_config_path)
+            # with open(curr_config_path, 'w') as config_file: # TODO save to file current instance parameters while keeping file format
+            #     yaml.dump(CONFIG, config_file, default_flow_style=True)
 
     def evaluate(self):
         """
@@ -112,6 +118,53 @@ class Trainer(object):
         decoded_words = self.decode(output_list[-1])
 
         return calculate_accuracy(decoded_words, target_per_snr, DEVICE)
+
+    def evaluate_crc_distribution(self, type='', only_crc_errors=True):
+        '''
+        Evaluate the crc value for every snr
+        '''
+        snr_range = self.snr_range['val']
+        max_val = 2**CONFIG.crc_order
+        if type =="uniform4":
+            max_val = 3
+        elif type == 'sum':
+            max_val = CONFIG.crc_order
+        elif type == 'sum%4':
+            max_val = 3
+        pred_crc_distribution = np.zeros((len(snr_range), max_val+1))
+        actual_crc_distribution = np.zeros((len(snr_range), max_val+1))
+        crc2int = lambda crc : int("".join(str(int(x)) for x in crc),2)
+        for j, snr in enumerate(snr_range):
+            rx_per_snr_tot, target_per_snr_tot = iter(self.channel_dataset['val'][j])
+            for i in range(10): # divide to batch
+                ptr = int(CONFIG.val_batch_size/10)
+                rx_per_snr = rx_per_snr_tot[i*ptr:(i+1)*ptr]
+                target_per_snr = target_per_snr_tot[i*ptr:(i+1)*ptr]
+                rx_per_snr = rx_per_snr.to(device=DEVICE)
+                target_per_snr = target_per_snr.to(device=DEVICE)
+                output_list, not_satisfied_list = self.model(rx_per_snr)
+                decoded_words = self.decode(output_list[-1])
+                actual_crc = crc.crc_check(target_per_snr, CONFIG.crc_order)
+                pred_crc = crc.crc_check(decoded_words, CONFIG.crc_order)
+                for w in range(np.shape(actual_crc)[0]):
+                    actual_val = crc2int(actual_crc[w])
+                    pred_val = crc2int(pred_crc[w])
+                    if only_crc_errors and (pred_val == 0):
+                        continue # counting only errors
+                    actual_crc_distribution[j,actual_val] += 1
+                    if type =="uniform4":
+                        pred_val = crc2int(pred_crc[w][:2])
+                    elif type == 'sum':
+                        pred_val = crc.sumBits(pred_crc[w])
+                    elif type == 'sum%4':
+                        pred_val = crc.sumBits(pred_crc[w])%4
+                    pred_crc_distribution[j,pred_val] += 1
+
+                print(f'done {int(100*(i+10*j)/(10*len(snr_range)))}%')
+
+        return actual_crc_distribution, pred_crc_distribution
+
+
 
     def optimization_setup(self):
         if CONFIG.optimizer_type == 'SGD':

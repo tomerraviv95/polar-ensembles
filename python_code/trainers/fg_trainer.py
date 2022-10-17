@@ -12,6 +12,9 @@ class PolarFGTrainer(Trainer):
     """
 
     def __init__(self):
+        run_name = CONFIG.run_name
+        if not(run_name):
+            run_name = f"wfg_{CONFIG.code_len}_{CONFIG.info_len}_iters{CONFIG.iteration_num}_crc{CONFIG.crc_order}"
         super().__init__()
 
     def load_model(self):
@@ -26,7 +29,7 @@ class PolarFGTrainer(Trainer):
     # calculate train loss
     def calc_loss(self, prediction, labels):
         output_list, not_satisfied_list = prediction
-        return self.criterion(output_list[-1], labels)
+        return self.criterion(-output_list[-1], labels)
 
     def decode(self, soft_values):
         return llr_to_bits(soft_values)

@@ -1,5 +1,6 @@
 from python_code.data.channel_model import BPSKmodulation, AWGN
 from python_code.codes.polar_codes import encoding
+from python_code.codes.crc import crc
 from torch.utils.data import Dataset
 import concurrent.futures
 import collections
@@ -14,6 +15,7 @@ class ChannelModelDataset(Dataset):
                  channel=AWGN, batch_size=None,
                  snr_range=None, zero_word_only=True,
                  random=None, wordRandom=None,
+                 crc_order=0,
                  **code_params):
         self.code_len = code_len
         self.info_len = info_len
@@ -27,6 +29,7 @@ class ChannelModelDataset(Dataset):
         self.zero_word_only = zero_word_only
         self.clipping_val = clipping_val
         self.decoder_name = decoder_name
+        self.crc_order = crc_order
 
         if code_type == 'Polar':
             self.encoding = lambda u: encoding.encode(target=u,
@@ -44,18 +47,21 @@ class ChannelModelDataset(Dataset):
         (It is used with batch-filtering such as very noisy words....
         I removed the filtering here)
         """
-        rate = float(self.info_len / self.code_len)
+        rate = float((self.info_len-self.crc_order) / self.code_len)
         rx = np.empty((0, self.code_len))
         tx = np.empty((0, self.code_len))
         u = np.empty((0, self.info_len))
         while len(rx) < self.batch_size:
             if self.zero_word_only:
-                x = np.zeros((self.batch_size, self.code_len))
                 target = np.zeros((self.batch_size, self.info_len))
+                x = np.zeros((self.batch_size, self.code_len))
                 current_tx = np.ones((self.batch_size, self.code_len))
             else:
                 # generate word
                 target = self.wordRandom.randint(0, 2, size=(self.batch_size, self.info_len))
+                # crc encoding
+                if self.crc_order: # add crc bits and keep code len factor of 2
+                    target = crc.crc_encode(target[:,:-self.crc_order], self.crc_order)
                 # encoding
                 x = self.encoding(target)
                 # modulation
@@ -87,6 +93,8 @@ class ChannelModelDataset(Dataset):
         sent = torch.tensor(sent).float().view(-1, self.code_len)
         target = torch.tensor(target).float().view(-1, self.info_len)
         if self.decoder_name == 'FG':
+            return received, target
+        elif self.decoder_name == 'Ensemble':
             return received, target
         elif self.decoder_name == 'Tanner':
             return received, sent

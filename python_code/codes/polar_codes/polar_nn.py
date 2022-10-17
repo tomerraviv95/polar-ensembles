@@ -42,6 +42,7 @@ class IterateRightLayer(torch.nn.Module):
         super().__init__()
         self.clipping_val = clipping_val
         # initialize weights
+        self.code_len = code_len
         connections = initialize_connections(code_len)
         self.mask_dict, self.negative_mask_dict = get_masks_dicts(code_len, connections)
         self.num_stages = int(np.log2(code_len))
@@ -70,6 +71,7 @@ class IterateLeftLayer(torch.nn.Module):
         super().__init__()
         self.clipping_val = clipping_val
         # initialize weights
+        self.code_len = code_len
         connections = initialize_connections(code_len)
         self.mask_dict, self.negative_mask_dict = get_masks_dicts(code_len, connections)
         self.num_stages = int(np.log2(code_len))
@@ -82,7 +84,7 @@ class IterateLeftLayer(torch.nn.Module):
             right_prev0 = right[:, i, self.negative_mask_dict[i]]
             right_prev1 = right[:, i, self.mask_dict[i]]
 
-            left[:, i, self.mask_dict[i]] = self.left_weights[iter, i, 0] * min_sum(left_prev1,
+            left[:, i, self.mask_dict[i]] = self.left_weights[iter, i,0] * min_sum(left_prev1,
                                                                                     left_prev0 + right_prev0)
             left[:, i, self.negative_mask_dict[i]] = self.left_weights[iter, i, 1] * min_sum(left_prev1,
                                                                                              right_prev1) + left_prev0
