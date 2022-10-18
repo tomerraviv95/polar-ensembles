@@ -337,7 +337,18 @@ class Plotter:
         plt.legend(loc='lower left', prop={'size': 15})
 
 if __name__ == '__main__':
-
+    '''
+    plot CRC words passed per decoder :
+        plotter = Plotter(run_over=True, type='CRCPASS')
+        plotter.plot(*get_ensemble_polar_64_32_crc11_iter5_decs_4_uniform(),dec_type='Ensemble') # use any function from plotter_types as first input
+    plot CRC distribution :
+        plotter = Plotter(run_over=False, type='pred_crc')
+        plotter.plot_crc(*get_polar_64_32(), type='', only_crc_errors=True, words_count=any number) # use any function from plotter_types as first input
+    plot flops(complexity):
+        graph,conf = get_polar_64_32() # from plotter_types
+        f = get_flops_num(*get_polar_64_32(),num_of_decoders=4) # choose how many decoders in ensemble excluding the untrained  BP
+        plot_avg_flops(ens_flops=f, ens_dec_num=4, config_params=conf, title="")
+    '''
 
     ''' flops '''
     '''64 32'''
