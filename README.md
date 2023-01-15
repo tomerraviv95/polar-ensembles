@@ -43,7 +43,7 @@ Decoder params - code_type, code_len, info_len, clipping_val, iteration_num, ear
 
 Data params - val_batch_size, val_SNR_start, val_SNR_end, val_num_SNR, noise_seed, word_seed, test_errors, crc_order.
 
-NN training hyperparams - run_name, load_weights, lr, optimizer_type, criterion_type, num_of_epochs, validation_epochs, train_minibatch_size, train_SNR_start, train_SNR_end, train_num_SNR.### augmentations
+NN training hyperparams - run_name, load_weights, lr, optimizer_type, criterion_type, num_of_epochs, validation_epochs, train_minibatch_size, train_SNR_start, train_SNR_end, train_num_SNR.
 
 ### codes 
 
