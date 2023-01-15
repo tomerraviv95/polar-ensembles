@@ -11,7 +11,7 @@ Please cite our [paper](https://arxiv.org/), if the code is used for publishing 
   * [python_code](#python_code)
     + [config](#config)
     + [codes](#codes)
-    + [data](#data)
+    + [data_](#data_)
     + [decoders](#decoders)
     + [plotter](#plotter)
     + [trainers](#trainers)
@@ -45,7 +45,11 @@ Data params - val_batch_size, val_SNR_start, val_SNR_end, val_num_SNR, noise_see
 
 NN training hyperparams - run_name, load_weights, lr, optimizer_type, criterion_type, num_of_epochs, validation_epochs, train_minibatch_size, train_SNR_start, train_SNR_end, train_num_SNR.### augmentations
 
-### data 
+### codes 
+
+Holds all relevant functions for the encoding/decoding of the polar and CRC codes.
+
+### data_ 
 
 Responsible for creation of the dataset composed of pairs of transmitted codewords, and the respective channel outputs.
 
@@ -101,6 +105,6 @@ This code was simulated with GeForce RTX 3060 with CUDA 12.
 
 4. Create a new environment.
 
-5. Run 'pip install requirements.txt'. This builds the appropriate software dependencies.
+5. Run 'pip install -r requirements.txt'. This builds the appropriate software dependencies.
 
 6. Done!
