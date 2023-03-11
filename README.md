@@ -2,7 +2,7 @@
 
 Python repository for the paper "CRC-Aided Learned Ensembles of Belief-Propagation Polar Decoders".
 
-Please cite our [paper](https://arxiv.org/), if the code is used for publishing research.
+Please cite our [paper](https://arxiv.org/abs/2301.06060), if the code is used for publishing research.
 
 # Table of Contents
 
